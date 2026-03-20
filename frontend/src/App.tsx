@@ -1,21 +1,22 @@
-import { useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Dashboard from "./pages/Dashboard";
+import CompanyInfo from "./pages/CompanyInfo";
+import FundingSelection from "./pages/FundingSelection";
+import ProjectDetails from "./pages/ProjectDetails";
+import DocumentsReview from "./pages/DocumentsReview";
+import Submit from "./pages/Submit";
 
-function App() {
-  const [status, setStatus] = useState<string>("loading...");
-
-  useEffect(() => {
-    fetch("/api/health")
-      .then((res) => res.json())
-      .then((data) => setStatus(data.status))
-      .catch(() => setStatus("error"));
-  }, []);
-
+export default function App() {
   return (
-    <div style={{ padding: "2rem", fontFamily: "system-ui, sans-serif" }}>
-      <h1>Hackathon App</h1>
-      <p>API status: {status}</p>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/app/company" element={<CompanyInfo />} />
+        <Route path="/app/funding" element={<FundingSelection />} />
+        <Route path="/app/project" element={<ProjectDetails />} />
+        <Route path="/app/review" element={<DocumentsReview />} />
+        <Route path="/app/submit" element={<Submit />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
-
-export default App;

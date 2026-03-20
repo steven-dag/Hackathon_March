@@ -36,8 +36,8 @@ def get_grants_for_session(session_id: UUID):
     if not assessment_res.data:
         raise HTTPException(status_code=404, detail="Assessment not found for this session")
 
-    company = company_res.data
-    assessment = assessment_res.data
+    company = company_res.data[0]
+    assessment = assessment_res.data[0]
 
     # Run matching
     matched = match_grants(

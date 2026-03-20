@@ -47,7 +47,11 @@ class SupabaseTable:
         return self
 
     def insert(self, data: Dict | List):
-        resp = requests.post(self.url, json=data, headers=HEADERS)
+        self._insert_data = data
+        return self
+
+    def _do_insert(self):
+        resp = requests.post(self.url, json=self._insert_data, headers=HEADERS)
         resp.raise_for_status()
         result = resp.json()
         return _Result(result if isinstance(result, list) else [result])
@@ -56,6 +60,10 @@ class SupabaseTable:
         return _PendingUpdate(self.url, data, self._filters[:])
 
     def execute(self):
+        # If this was chained after insert()
+        if hasattr(self, "_insert_data"):
+            return self._do_insert()
+
         params = {"select": self._select_cols}
         for col, val in self._filters:
             params[col] = val

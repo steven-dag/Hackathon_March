@@ -46,8 +46,8 @@ def generate_plan(data: PlanRequest):
     )
     grants = grants_res.data or []
 
-    company = company_res.data
-    assessment = assessment_res.data
+    company = company_res.data[0]
+    assessment = assessment_res.data[0]
 
     # Generate plan via Azure OpenAI
     try:

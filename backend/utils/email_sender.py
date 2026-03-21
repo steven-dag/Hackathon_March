@@ -1,5 +1,6 @@
 """
 Email sender for .birdie – sends plan PDF to advisor (Sarah) via Gmail SMTP.
+Also sends portal link to the customer after booking.
 Configure GMAIL_USER and GMAIL_APP_PASSWORD in .env
 """
 
@@ -10,6 +11,8 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 from datetime import datetime
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5174")
 
 
 def send_plan_email(
@@ -96,4 +99,72 @@ def send_plan_email(
 
     except Exception as e:
         print(f"[email] Failed to send email: {e}")
+        return False
+
+
+def send_customer_portal_email(
+    customer_name: str,
+    customer_email: str,
+    company_name: str,
+    session_id: str,
+) -> bool:
+    """
+    Send the customer a magic link to their personal portal after booking.
+    """
+    gmail_user = os.getenv("GMAIL_USER")
+    gmail_password = os.getenv("GMAIL_APP_PASSWORD")
+
+    if not gmail_user or not gmail_password:
+        print("[email] GMAIL_USER / GMAIL_APP_PASSWORD not set – skipping customer email.")
+        return False
+
+    portal_url = f"{FRONTEND_URL}/portal?session={session_id}"
+
+    body_html = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; color: #111;">
+      <div style="background:#0a0a0a; padding:20px 24px; border-radius:8px 8px 0 0;">
+        <span style="color:#4ADE80; font-size:22px; font-weight:800;">.birdie</span>
+      </div>
+      <div style="border:1px solid #e5e7eb; border-top:none; padding:24px; border-radius:0 0 8px 8px;">
+        <h2 style="margin-top:0;">Ihr persönliches Portal ist bereit</h2>
+        <p>Hallo {customer_name},</p>
+        <p>
+          vielen Dank für Ihr Interesse. Ihr Beratungsgespräch wurde erfolgreich gebucht.
+          In Ihrem persönlichen .birdie-Portal finden Sie Ihren Digitalplan sowie
+          eine individuelle Checkliste der benötigten Unterlagen für Ihre Fördermittel.
+        </p>
+        <p><strong>Unternehmen:</strong> {company_name}</p>
+        <p style="margin-top:24px;">
+          <a href="{portal_url}"
+             style="display:inline-block;background:#0a0a0a;color:#4ADE80;
+                    padding:12px 24px;border-radius:6px;text-decoration:none;
+                    font-weight:700;font-size:15px;">
+            Zum Portal öffnen
+          </a>
+        </p>
+        <p style="color:#6b7280; font-size:13px; margin-top:24px;">
+          Bitte bereiten Sie die aufgelisteten Dokumente bis zu Ihrem Termin vor —
+          so können wir gemeinsam sofort mit dem Förderantrag loslegen.
+        </p>
+        <p style="color:#6b7280; font-size:13px;">— .birdie</p>
+      </div>
+    </div>
+    """
+
+    try:
+        msg = MIMEMultipart("mixed")
+        msg["From"] = gmail_user
+        msg["To"] = customer_email
+        msg["Subject"] = f".birdie | Ihr persönliches Portal – {company_name}"
+        msg.attach(MIMEText(body_html, "html"))
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(gmail_user, gmail_password)
+            server.sendmail(gmail_user, customer_email, msg.as_string())
+
+        print(f"[email] Portal link sent to {customer_email}")
+        return True
+
+    except Exception as e:
+        print(f"[email] Failed to send customer email: {e}")
         return False

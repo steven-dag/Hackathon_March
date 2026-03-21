@@ -8,6 +8,7 @@ from models.schemas import (
 )
 from database.supabase_client import supabase
 from ai.azure_openai import client, MODEL
+from utils.email_sender import send_customer_portal_email
 from google.genai import types
 import requests
 import json
@@ -132,5 +133,24 @@ def create_booking(data: BookingCreate):
 
     # Mark session as completed
     supabase.table("sessions").update({"status": "completed"}).eq("id", str(data.session_id)).execute()
+
+    # Send customer portal link email (non-blocking)
+    try:
+        company_res = (
+            supabase.table("companies")
+            .select("name")
+            .eq("session_id", str(data.session_id))
+            .single()
+            .execute()
+        )
+        company_name = company_res.data[0]["name"] if company_res.data else ""
+        send_customer_portal_email(
+            customer_name=data.name,
+            customer_email=data.email,
+            company_name=company_name,
+            session_id=str(data.session_id),
+        )
+    except Exception as e:
+        print(f"[booking] Customer email failed (non-fatal): {e}")
 
     return result.data[0]

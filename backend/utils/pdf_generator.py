@@ -46,6 +46,27 @@ def _styles():
     }
 
 
+def _safe(text: str) -> str:
+    """Replace Unicode chars that Helvetica/ReportLab can't encode."""
+    replacements = {
+        "\u2192": "->",   # →
+        "\u2190": "<-",   # ←
+        "\u2022": "-",    # •
+        "\u2013": "-",    # –
+        "\u2014": "--",   # —
+        "\u201c": '"',    # "
+        "\u201d": '"',    # "
+        "\u2018": "'",    # '
+        "\u2019": "'",    # '
+        "\u00b7": "-",    # ·
+        "\u2026": "...",  # …
+    }
+    for char, repl in replacements.items():
+        text = text.replace(char, repl)
+    # Strip any remaining non-latin1 characters
+    return text.encode("latin-1", errors="replace").decode("latin-1")
+
+
 def generate_plan_pdf(
     company: dict,
     assessment: dict,
@@ -158,7 +179,7 @@ def generate_plan_pdf(
     story.append(HRFlowable(width="100%", thickness=1, color=LIGHT_GRAY))
     story.append(Spacer(1, 4*mm))
     story.append(Paragraph("Zusammenfassung", s["h2"]))
-    story.append(Paragraph(plan.get("zusammenfassung", ""), s["body"]))
+    story.append(Paragraph(_safe(plan.get("zusammenfassung", "")), s["body"]))
     story.append(Spacer(1, 5*mm))
 
     # ── 12-MONATS-PHASEN ──────────────────────────────────────────────────────
@@ -196,9 +217,9 @@ def generate_plan_pdf(
         ]))
 
         # Phase body
-        body_content = [Paragraph(beschr, s["body"])]
+        body_content = [Paragraph(_safe(beschr), s["body"])]
         for m in massn:
-            body_content.append(Paragraph(f"• {m}", s["body"]))
+            body_content.append(Paragraph(f"- {_safe(m)}", s["body"]))
 
         phase_body = Table([[body_content]], colWidths=["100%"])
         phase_body.setStyle(TableStyle([
@@ -272,7 +293,7 @@ def generate_plan_pdf(
         story.append(Spacer(1, 4*mm))
         story.append(Paragraph("Nächste Schritte", s["h2"]))
         for i, step in enumerate(naechste, 1):
-            story.append(Paragraph(f"{i}. {step}", s["body"]))
+            story.append(Paragraph(f"{i}. {_safe(step)}", s["body"]))
         story.append(Spacer(1, 5*mm))
 
     # ── EMPFOHLENE FÖRDERUNGEN ────────────────────────────────────────────────

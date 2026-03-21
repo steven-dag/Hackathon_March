@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import onboarding, grants, plan
+from routes import onboarding, grants, plan, portal
 
 app = FastAPI(
     title=".birdie API",
@@ -24,6 +24,7 @@ app.add_middleware(
 app.include_router(onboarding.router)
 app.include_router(grants.router)
 app.include_router(plan.router)
+app.include_router(portal.router)
 
 
 # ─── Health ──────────────────────────────────────────────────────────────────

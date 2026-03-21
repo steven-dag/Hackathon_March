@@ -5,6 +5,7 @@ import FundingSelection from "./pages/FundingSelection";
 import DocumentsReview from "./pages/DocumentsReview";
 import Submit from "./pages/Submit";
 import Portal from "./pages/Portal";
+import PortalLogin from "./pages/PortalLogin";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/app/review" element={<DocumentsReview />} />
         <Route path="/app/submit" element={<Submit />} />
         <Route path="/portal" element={<Portal />} />
+        <Route path="/portal/login" element={<PortalLogin />} />
       </Routes>
     </BrowserRouter>
   );

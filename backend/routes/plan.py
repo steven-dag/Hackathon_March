@@ -2,9 +2,15 @@ from fastapi import APIRouter, HTTPException
 from models.schemas import PlanRequest, PlanResponse
 from ai.azure_openai import generate_digitalization_plan
 from database.supabase_client import supabase
+from utils.pdf_generator import generate_plan_pdf
+from utils.email_sender import send_plan_email
+from utils.drive_uploader import upload_plan_to_drive
+import os
 import json
 
 router = APIRouter(prefix="/api/plan", tags=["Plan"])
+
+ADVISOR_EMAIL = os.getenv("ADVISOR_EMAIL", "s.vogel@volta-solaranlagen.de")
 
 
 @router.post("/generate", response_model=PlanResponse)
@@ -71,6 +77,28 @@ def generate_plan(data: PlanRequest):
         "zeitraum_monate": plan_data.get("zeitraum_monate", 12),
         "kosten_aufstellung_json": json.dumps(plan_data.get("kosten_aufstellung", {}), ensure_ascii=False),
     }).execute()
+
+    # Generate PDF → Google Drive + Email (non-blocking)
+    try:
+        pdf_bytes = generate_plan_pdf(
+            company=company,
+            assessment=assessment,
+            plan=plan_data,
+        )
+        # Upload to Google Drive: Kunden Gespräche/<company>/
+        drive_url = upload_plan_to_drive(
+            pdf_bytes=pdf_bytes,
+            company_name=company["name"],
+        )
+        send_plan_email(
+            company_name=company["name"],
+            company_branche=company.get("branche", ""),
+            recipient_email=ADVISOR_EMAIL,
+            pdf_bytes=pdf_bytes,
+            drive_url=drive_url,
+        )
+    except Exception as e:
+        print(f"[plan] PDF/Drive/Email step failed (non-fatal): {e}")
 
     return {
         "session_id": data.session_id,

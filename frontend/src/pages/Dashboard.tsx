@@ -22,8 +22,8 @@ const steps = [
   },
   {
     num: "03",
-    title: "Digitalplan erhalten",
-    desc: "Ihr persönlicher 12-Monats-Fahrplan – konkret, realistisch, förderfähig.",
+    title: "Fördergelder sichern",
+    desc: "Ihr 12-Monats-Fahrplan zeigt genau, welche Fördertöpfe Sie anzapfen können – und wie viel vom Staat zurückkommt.",
   },
   {
     num: "04",
@@ -119,9 +119,9 @@ export default function Dashboard() {
             fontSize: { xs: "1rem", md: "1.15rem" },
           }}
         >
-          .birdie erstellt für Ihr Handwerks- oder KMU-Unternehmen einen
-          maßgeschneiderten Digitalplan – inklusive passender Fördermittel
-          von Bund und Ländern. In 5 Minuten. Kostenlos.
+          Erfahren Sie, welche Fördermittel Ihnen zustehen – und bekommen
+          Sie einen konkreten Plan, wie Sie Ihr Unternehmen digitalisieren.
+          In 5 Minuten. Kostenlos und unverbindlich.
         </Typography>
         <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", alignItems: "center" }}>
           <Button
@@ -140,7 +140,7 @@ export default function Dashboard() {
               boxShadow: "0 0 32px rgba(74,222,128,0.3)",
             }}
           >
-            Jetzt Digitalplan erstellen →
+            Fördercheck starten →
           </Button>
           <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.35)" }}>
             Kein Account · Keine Kreditkarte

@@ -1,121 +1,98 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Card,
   CardContent,
   Chip,
+  CircularProgress,
+  LinearProgress,
   Typography,
-  TextField,
-  InputAdornment,
+  Alert,
+  Divider,
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
+import EuroIcon from "@mui/icons-material/Euro";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import StepperLayout from "../components/StepperLayout";
-
-const mockFunding = [
-  {
-    id: 1,
-    name: "Digital Jetzt",
-    provider: "BMWi",
-    maxAmount: "50,000 EUR",
-    coverage: "up to 50%",
-    description:
-      "Supports SMEs in investing in digital technologies and employee qualification.",
-    tags: ["Digitalization", "IT", "Training"],
-    aiRecommended: true,
-  },
-  {
-    id: 2,
-    name: "go-digital",
-    provider: "BMWi",
-    maxAmount: "16,500 EUR",
-    coverage: "50%",
-    description:
-      "Consulting subsidies for digitalization of business processes, IT security, and online marketing.",
-    tags: ["Consulting", "IT Security", "Marketing"],
-    aiRecommended: true,
-  },
-  {
-    id: 3,
-    name: "ERP-Gründerkredit",
-    provider: "KfW",
-    maxAmount: "125,000 EUR",
-    coverage: "Low-interest loan",
-    description:
-      "Favorable loans for startups and young companies up to 5 years old.",
-    tags: ["Startup", "Loan", "Investment"],
-    aiRecommended: false,
-  },
-  {
-    id: 4,
-    name: "ZIM – Zentrales Innovationsprogramm Mittelstand",
-    provider: "BMWi",
-    maxAmount: "380,000 EUR",
-    coverage: "up to 45%",
-    description:
-      "Funding for research and development projects of innovative SMEs.",
-    tags: ["R&D", "Innovation", "Technology"],
-    aiRecommended: false,
-  },
-];
+import { useSession } from "../context/SessionContext";
+import { getGrants } from "../services/api";
+import type { GrantMatch } from "../services/api";
 
 export default function FundingSelection() {
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [search, setSearch] = useState("");
+  const { sessionId, grants, setGrants } = useSession();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const filtered = mockFunding.filter(
-    (f) =>
-      f.name.toLowerCase().includes(search.toLowerCase()) ||
-      f.tags.some((t) => t.toLowerCase().includes(search.toLowerCase())) ||
-      f.provider.toLowerCase().includes(search.toLowerCase())
-  );
+  useEffect(() => {
+    if (!sessionId) return;
+    if (grants.length > 0) return;
+
+    setLoading(true);
+    setError(null);
+    getGrants(sessionId)
+      .then((data) => setGrants(data))
+      .catch((e: unknown) =>
+        setError(e instanceof Error ? e.message : "Fehler beim Laden der Förderungen.")
+      )
+      .finally(() => setLoading(false));
+  }, [sessionId]);
+
+  const scoreColor = (score: number): "success" | "warning" | "primary" => {
+    if (score >= 0.75) return "success";
+    if (score >= 0.5) return "warning";
+    return "primary";
+  };
 
   return (
-    <StepperLayout>
-      <Typography variant="h5" gutterBottom>
-        Select a Funding Program
+    <StepperLayout nextDisabled={loading || grants.length === 0}>
+      <Typography variant="h5" fontWeight={700} gutterBottom>
+        Passende Förderprogramme
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Based on your company profile, we've highlighted the best matches. You
-        can also search for specific programs.
+        Basierend auf Ihrem Unternehmensprofil haben wir die besten
+        Förderprogramme aus deutschen Förderdatenbanken gefunden.
       </Typography>
 
-      <TextField
-        placeholder="Search funding programs..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        sx={{ mb: 3 }}
-        slotProps={{
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          },
-        }}
-      />
+      {!sessionId && (
+        <Alert severity="warning">
+          Keine Session gefunden. Bitte gehen Sie zurück und füllen Sie die Firmendaten aus.
+        </Alert>
+      )}
 
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        {filtered.map((f) => {
-          const isSelected = selectedId === f.id;
-          return (
+      {loading && (
+        <Box sx={{ textAlign: "center", py: 6 }}>
+          <CircularProgress size={48} sx={{ mb: 2 }} />
+          <Typography variant="body1" fontWeight={600}>
+            KI analysiert passende Förderungen...
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Wir durchsuchen Digital Jetzt, BAFA, KfW, go-digital und weitere Datenbanken
+          </Typography>
+        </Box>
+      )}
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+
+      {!loading && grants.length > 0 && (
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {grants.map((g: GrantMatch) => (
             <Card
-              key={f.id}
-              onClick={() => setSelectedId(isSelected ? null : f.id)}
+              key={g.id}
               sx={{
-                cursor: "pointer",
-                border: "2px solid",
-                borderColor: isSelected ? "primary.main" : "transparent",
-                bgcolor: isSelected ? "primary.50" : "background.paper",
-                "&:hover": {
-                  borderColor: isSelected ? "primary.main" : "primary.light",
-                  bgcolor: isSelected ? "primary.50" : "grey.50",
-                },
-                transition: "all 0.2s",
+                borderLeft: "4px solid",
+                borderColor:
+                  g.passgenauigkeit_score >= 0.75
+                    ? "success.main"
+                    : g.passgenauigkeit_score >= 0.5
+                    ? "warning.main"
+                    : "grey.400",
+                borderRadius: 2,
               }}
+              elevation={2}
             >
               <CardContent>
                 <Box
@@ -124,58 +101,79 @@ export default function FundingSelection() {
                     justifyContent: "space-between",
                     alignItems: "flex-start",
                     mb: 1,
+                    flexWrap: "wrap",
+                    gap: 1,
                   }}
                 >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                    {isSelected ? (
-                      <CheckCircleIcon color="primary" />
-                    ) : (
-                      <RadioButtonUncheckedIcon color="disabled" />
-                    )}
-                    <Box>
-                      <Typography variant="h6" sx={{ fontSize: "1.05rem" }}>
-                        {f.name}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {f.provider} · Max {f.maxAmount} · Coverage: {f.coverage}
-                      </Typography>
-                    </Box>
+                  <Box>
+                    <Typography variant="h6" fontWeight={700} sx={{ fontSize: "1.05rem" }}>
+                      {g.programm_name}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {g.antragsteller}
+                      {g.frist ? ` · Frist: ${g.frist}` : ""}
+                    </Typography>
                   </Box>
-                  {f.aiRecommended && (
+                  <Chip
+                    icon={<AutoFixHighIcon />}
+                    label={`${Math.round(g.passgenauigkeit_score * 100)} % Passgenauigkeit`}
+                    color={scoreColor(g.passgenauigkeit_score)}
+                    size="small"
+                    variant="outlined"
+                  />
+                </Box>
+
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                  {g.beschreibung}
+                </Typography>
+
+                <LinearProgress
+                  variant="determinate"
+                  value={g.passgenauigkeit_score * 100}
+                  color={scoreColor(g.passgenauigkeit_score)}
+                  sx={{ height: 6, borderRadius: 3, mb: 1.5 }}
+                />
+
+                <Divider sx={{ mb: 1.5 }} />
+
+                <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", alignItems: "center" }}>
+                  {g.foerder_summe_max && (
                     <Chip
-                      icon={<AutoFixHighIcon />}
-                      label="AI Recommended"
-                      color="secondary"
+                      icon={<EuroIcon />}
+                      label={`Max. ${g.foerder_summe_max.toLocaleString("de-DE")} EUR`}
                       size="small"
+                      variant="outlined"
+                      color="primary"
                     />
                   )}
-                </Box>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ mb: 1.5, ml: 4.5 }}
-                >
-                  {f.description}
-                </Typography>
-                <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", ml: 4.5 }}>
-                  {f.tags.map((tag) => (
-                    <Chip key={tag} label={tag} size="small" variant="outlined" />
-                  ))}
+                  {g.foerder_quote_prozent && (
+                    <Chip
+                      label={`${g.foerder_quote_prozent} % Förderquote`}
+                      size="small"
+                      variant="outlined"
+                    />
+                  )}
+                  <Chip
+                    icon={<OpenInNewIcon />}
+                    label="Mehr erfahren"
+                    size="small"
+                    variant="outlined"
+                    onClick={() => window.open(g.quelle_url, "_blank", "noopener,noreferrer")}
+                    sx={{ cursor: "pointer" }}
+                  />
                 </Box>
               </CardContent>
             </Card>
-          );
-        })}
-        {filtered.length === 0 && (
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ textAlign: "center", py: 4 }}
-          >
-            No funding programs match your search.
-          </Typography>
-        )}
-      </Box>
+          ))}
+        </Box>
+      )}
+
+      {!loading && !error && grants.length === 0 && sessionId && (
+        <Alert severity="info">
+          Keine passenden Förderprogramme gefunden. Unser Team kann Ihnen bei einer
+          individuellen Suche helfen.
+        </Alert>
+      )}
     </StepperLayout>
   );
 }

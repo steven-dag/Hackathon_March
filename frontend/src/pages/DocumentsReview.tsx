@@ -1,267 +1,314 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
-  Button,
   Card,
   CardContent,
   Chip,
+  CircularProgress,
   Divider,
-  IconButton,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
-  Paper,
-  TextField,
   Typography,
+  Alert,
+  LinearProgress,
 } from "@mui/material";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import DescriptionIcon from "@mui/icons-material/Description";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
-import SmartToyIcon from "@mui/icons-material/SmartToy";
-import SendIcon from "@mui/icons-material/Send";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import EuroIcon from "@mui/icons-material/Euro";
 import StepperLayout from "../components/StepperLayout";
-
-const requiredDocs = [
-  { name: "Business Registration (Gewerbeanmeldung)", uploaded: false },
-  { name: "Latest Annual Financial Statement", uploaded: false },
-  { name: "Tax Certificate (Steuerbescheinigung)", uploaded: false },
-  { name: "Project Cost Breakdown", uploaded: false },
-];
-
-const reviewSections = [
-  {
-    title: "Company Information",
-    items: ["Company Name", "Address", "Size & Industry", "Revenue & Tax ID"],
-  },
-  {
-    title: "Selected Funding",
-    items: ["Program name", "Provider", "Maximum amount"],
-  },
-  {
-    title: "Project Details",
-    items: ["Title", "Summary", "Budget"],
-  },
-];
-
-const aiPlanSteps = [
-  "Verify company eligibility based on size and industry requirements",
-  "Cross-reference project scope with Digital Jetzt program criteria",
-  "Auto-generate the \"Digitalisierungsplan\" section from your project summary",
-  "Calculate eligible cost items and maximum funding amount",
-  "Pre-fill the official application PDF with all collected data",
-  "Flag any missing information or documents before submission",
-];
-
-interface ChatMessage {
-  role: "user" | "agent";
-  text: string;
-}
+import { useSession } from "../context/SessionContext";
+import { generatePlan, getPlan } from "../services/api";
+import type { Plan } from "../services/api";
 
 export default function DocumentsReview() {
-  const [chatOpen, setChatOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      role: "agent",
-      text: "Hi! I'm your funding assistant. I've reviewed your application — everything looks good so far. Do you have any questions before submitting?",
-    },
-  ]);
-  const [input, setInput] = useState("");
+  const { sessionId, plan, setPlan } = useSession();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [localPlan, setLocalPlan] = useState<Plan | null>(plan);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-    const userMsg = input.trim();
-    setMessages((prev) => [...prev, { role: "user", text: userMsg }]);
-    setInput("");
-    // TODO: Replace with real backend agent call
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "agent",
-          text: "Thanks for your question! Our team will look into this. For now, your application data looks complete and ready for submission.",
-        },
-      ]);
-    }, 1500);
-  };
+  useEffect(() => {
+    if (!sessionId) return;
+    if (plan) {
+      setLocalPlan(plan);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    generatePlan(sessionId)
+      .then((data) => {
+        setPlan(data);
+        setLocalPlan(data);
+      })
+      .catch(async () => {
+        try {
+          const existing = await getPlan(sessionId);
+          setPlan(existing);
+          setLocalPlan(existing);
+        } catch (e2: unknown) {
+          setError(
+            e2 instanceof Error
+              ? e2.message
+              : "Fehler beim Laden des Plans."
+          );
+        }
+      })
+      .finally(() => setLoading(false));
+  }, [sessionId]);
 
   return (
-    <StepperLayout>
-      <Typography variant="h5" gutterBottom>
-        Documents & Review
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Upload required documents, review the AI plan, and chat with our
-        assistant if you need help.
-      </Typography>
-
-      {/* Upload Section */}
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        Required Documents
-      </Typography>
-      <Card sx={{ mb: 4 }}>
-        <CardContent>
-          <List disablePadding>
-            {requiredDocs.map((doc, i) => (
-              <Box key={doc.name}>
-                <ListItem
-                  secondaryAction={
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      startIcon={<CloudUploadIcon />}
-                    >
-                      Upload
-                    </Button>
-                  }
-                >
-                  <ListItemIcon>
-                    <DescriptionIcon color="action" />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={doc.name}
-                    secondary={doc.uploaded ? "Uploaded" : "Not uploaded yet"}
-                  />
-                </ListItem>
-                {i < requiredDocs.length - 1 && <Divider />}
-              </Box>
-            ))}
-          </List>
-        </CardContent>
-      </Card>
-
-      {/* AI Plan Overview */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-        <Typography variant="h6">AI Application Plan</Typography>
+    <StepperLayout nextDisabled={loading || !localPlan}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+        <Typography variant="h5" fontWeight={700}>
+          Ihr KI-Digitalisierungsplan
+        </Typography>
         <Chip
           icon={<AutoFixHighIcon />}
-          label="Generated by AI"
+          label="Generiert von KI"
           size="small"
           color="secondary"
           variant="outlined"
         />
       </Box>
-      <Card sx={{ mb: 4, borderLeft: "4px solid", borderColor: "secondary.main" }}>
-        <CardContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Here's what our AI will do to complete your application:
-          </Typography>
-          <List dense disablePadding>
-            {aiPlanSteps.map((step, i) => (
-              <ListItem key={i} disableGutters>
-                <ListItemIcon sx={{ minWidth: 32 }}>
-                  <Chip
-                    label={i + 1}
-                    size="small"
-                    color="secondary"
-                    sx={{
-                      height: 22,
-                      width: 22,
-                      "& .MuiChip-label": { px: 0 },
-                    }}
-                  />
-                </ListItemIcon>
-                <ListItemText primary={step} />
-              </ListItem>
-            ))}
-          </List>
-        </CardContent>
-      </Card>
-
-      {/* Application Summary */}
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        Application Summary
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        Ihr persönlicher 12-Monats-Plan mit Maßnahmen, Zeitplan und
+        Förderoptionen – erstellt von Gemini AI.
       </Typography>
-      {reviewSections.map((section) => (
-        <Card key={section.title} sx={{ mb: 2 }}>
-          <CardContent>
-            <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-              {section.title}
-            </Typography>
-            <List dense disablePadding>
-              {section.items.map((item) => (
-                <ListItem key={item} disableGutters>
-                  <ListItemIcon sx={{ minWidth: 32 }}>
-                    <CheckCircleIcon color="success" fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText primary={item} secondary="—" />
-                </ListItem>
-              ))}
-            </List>
-          </CardContent>
-        </Card>
-      ))}
 
-      {/* Chat with Agent */}
-      <Divider sx={{ my: 3 }} />
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          mb: 2,
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <SmartToyIcon color="primary" />
-          <Typography variant="h6">Need help? Chat with our AI assistant</Typography>
+      {!sessionId && (
+        <Alert severity="warning">
+          Keine Session gefunden. Bitte gehen Sie zurück und füllen Sie die Firmendaten aus.
+        </Alert>
+      )}
+
+      {loading && (
+        <Box sx={{ textAlign: "center", py: 6 }}>
+          <CircularProgress size={52} sx={{ mb: 2 }} />
+          <Typography variant="body1" fontWeight={600}>
+            KI erstellt Ihren Digitalisierungsplan...
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1, mb: 3 }}>
+            Gemini AI analysiert Ihr Unternehmen und erstellt einen maßgeschneiderten Plan
+          </Typography>
+          <LinearProgress sx={{ borderRadius: 2 }} />
         </Box>
-        {!chatOpen && (
-          <Button
-            variant="outlined"
-            startIcon={<SmartToyIcon />}
-            onClick={() => setChatOpen(true)}
-          >
-            Open Chat
-          </Button>
-        )}
-      </Box>
+      )}
 
-      {chatOpen && (
-        <Card variant="outlined" sx={{ borderColor: "primary.light" }}>
-          <CardContent sx={{ p: 0 }}>
-            <Box sx={{ maxHeight: 300, overflowY: "auto", p: 2 }}>
-              {messages.map((msg, i) => (
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+
+      {localPlan && !loading && (
+        <Box>
+          {/* Summary */}
+          <Card
+            sx={{
+              mb: 3,
+              borderLeft: "4px solid",
+              borderColor: "secondary.main",
+              borderRadius: 2,
+            }}
+            elevation={2}
+          >
+            <CardContent>
+              <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+                Zusammenfassung
+              </Typography>
+              <Typography variant="body2" color="text.secondary" lineHeight={1.8}>
+                {localPlan.zusammenfassung}
+              </Typography>
+            </CardContent>
+          </Card>
+
+          {/* Phases */}
+          <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+            Umsetzungsphasen ({localPlan.zeitraum_monate} Monate)
+          </Typography>
+          {localPlan.phasen.map((phase, i) => (
+            <Card key={i} sx={{ mb: 2, borderRadius: 2 }} elevation={1}>
+              <CardContent>
                 <Box
-                  key={i}
                   sx={{
                     display: "flex",
-                    justifyContent: msg.role === "user" ? "flex-end" : "flex-start",
+                    alignItems: "center",
+                    gap: 1.5,
                     mb: 1.5,
                   }}
                 >
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      px: 2,
-                      py: 1,
-                      maxWidth: "75%",
-                      bgcolor: msg.role === "user" ? "primary.main" : "grey.100",
-                      color: msg.role === "user" ? "white" : "text.primary",
-                      borderRadius: 2,
-                    }}
-                  >
-                    <Typography variant="body2">{msg.text}</Typography>
-                  </Paper>
+                  <Chip
+                    label={phase.monat}
+                    size="small"
+                    color="primary"
+                    sx={{ fontWeight: 700 }}
+                  />
+                  <Typography variant="subtitle1" fontWeight={700}>
+                    {phase.titel}
+                  </Typography>
+                  {phase.kosten_geschaetzt && (
+                    <Chip
+                      icon={<EuroIcon />}
+                      label={`${phase.kosten_geschaetzt.toLocaleString("de-DE")} EUR`}
+                      size="small"
+                      variant="outlined"
+                      sx={{ ml: "auto" }}
+                    />
+                  )}
                 </Box>
-              ))}
-            </Box>
-            <Divider />
-            <Box sx={{ display: "flex", gap: 1, p: 1.5 }}>
-              <TextField
-                size="small"
-                placeholder="Ask a question about your application..."
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              />
-              <IconButton color="primary" onClick={handleSend} disabled={!input.trim()}>
-                <SendIcon />
-              </IconButton>
-            </Box>
-          </CardContent>
-        </Card>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                  {phase.beschreibung}
+                </Typography>
+                <List dense disablePadding>
+                  {phase.massnahmen.map((m, j) => (
+                    <ListItem key={j} disableGutters sx={{ py: 0.25 }}>
+                      <ListItemIcon sx={{ minWidth: 28 }}>
+                        <CheckCircleIcon color="success" fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={m}
+                        primaryTypographyProps={{ variant: "body2" }}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </CardContent>
+            </Card>
+          ))}
+
+          {/* Cost breakdown */}
+          <Typography variant="h6" fontWeight={700} sx={{ mb: 2, mt: 3 }}>
+            Kostenaufstellung
+          </Typography>
+          <Card sx={{ mb: 3, borderRadius: 2 }} elevation={2}>
+            <CardContent>
+              {localPlan.kosten_aufstellung.entwicklung && (
+                <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                  <Typography variant="body2">Entwicklung</Typography>
+                  <Typography variant="body2" fontWeight={600}>
+                    {localPlan.kosten_aufstellung.entwicklung.toLocaleString("de-DE")} EUR
+                  </Typography>
+                </Box>
+              )}
+              {localPlan.kosten_aufstellung.lizenzen && (
+                <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                  <Typography variant="body2">Lizenzen</Typography>
+                  <Typography variant="body2" fontWeight={600}>
+                    {localPlan.kosten_aufstellung.lizenzen.toLocaleString("de-DE")} EUR
+                  </Typography>
+                </Box>
+              )}
+              {localPlan.kosten_aufstellung.beratung && (
+                <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                  <Typography variant="body2">Beratung</Typography>
+                  <Typography variant="body2" fontWeight={600}>
+                    {localPlan.kosten_aufstellung.beratung.toLocaleString("de-DE")} EUR
+                  </Typography>
+                </Box>
+              )}
+              {localPlan.kosten_aufstellung.hardware && (
+                <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                  <Typography variant="body2">Hardware</Typography>
+                  <Typography variant="body2" fontWeight={600}>
+                    {localPlan.kosten_aufstellung.hardware.toLocaleString("de-DE")} EUR
+                  </Typography>
+                </Box>
+              )}
+              <Divider sx={{ my: 1.5 }} />
+              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                <Typography variant="body1" fontWeight={700}>
+                  Gesamtkosten
+                </Typography>
+                <Typography variant="body1" fontWeight={700}>
+                  {localPlan.kosten_aufstellung.gesamt.toLocaleString("de-DE")} EUR
+                </Typography>
+              </Box>
+              {localPlan.kosten_aufstellung.foerderung_abzug && (
+                <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                  <Typography variant="body2" color="success.main">
+                    Förderung (Abzug)
+                  </Typography>
+                  <Typography variant="body2" color="success.main" fontWeight={600}>
+                    -{localPlan.kosten_aufstellung.foerderung_abzug.toLocaleString("de-DE")} EUR
+                  </Typography>
+                </Box>
+              )}
+              {localPlan.kosten_aufstellung.eigenanteil && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mt: 1,
+                    p: 1.5,
+                    bgcolor: "primary.50",
+                    borderRadius: 1,
+                  }}
+                >
+                  <Typography variant="body1" fontWeight={700} color="primary.main">
+                    Ihr Eigenanteil
+                  </Typography>
+                  <Typography variant="body1" fontWeight={700} color="primary.main">
+                    {localPlan.kosten_aufstellung.eigenanteil.toLocaleString("de-DE")} EUR
+                  </Typography>
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Next steps */}
+          <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+            Nächste Schritte
+          </Typography>
+          <Card sx={{ mb: 2, borderRadius: 2 }} elevation={1}>
+            <CardContent>
+              <List dense disablePadding>
+                {localPlan.naechste_schritte.map((step, i) => (
+                  <ListItem key={i} disableGutters sx={{ py: 0.5 }}>
+                    <ListItemIcon sx={{ minWidth: 32 }}>
+                      <Chip
+                        label={i + 1}
+                        size="small"
+                        color="primary"
+                        sx={{
+                          height: 24,
+                          width: 24,
+                          "& .MuiChip-label": { px: 0 },
+                          fontWeight: 700,
+                        }}
+                      />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={step}
+                      primaryTypographyProps={{ variant: "body2" }}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </CardContent>
+          </Card>
+
+          {/* Recommended grants */}
+          {localPlan.empfohlene_foerderungen.length > 0 && (
+            <>
+              <Typography variant="h6" fontWeight={700} sx={{ mb: 2, mt: 3 }}>
+                Empfohlene Förderprogramme
+              </Typography>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                {localPlan.empfohlene_foerderungen.map((f) => (
+                  <Chip
+                    key={f}
+                    label={f}
+                    variant="outlined"
+                    color="secondary"
+                  />
+                ))}
+              </Box>
+            </>
+          )}
+        </Box>
       )}
     </StepperLayout>
   );

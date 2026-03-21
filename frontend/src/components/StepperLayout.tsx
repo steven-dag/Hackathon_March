@@ -6,53 +6,91 @@ import {
   Container,
   Paper,
   Button,
+  Typography,
   useMediaQuery,
   useTheme,
+  CircularProgress,
 } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 const steps = [
-  { label: "Company Info", path: "/app/company" },
-  { label: "Funding Selection", path: "/app/funding" },
-  { label: "Project Details", path: "/app/project" },
-  { label: "Documents & Review", path: "/app/review" },
-  { label: "Submit", path: "/app/submit" },
+  { label: "Firmendaten", path: "/app/company" },
+  { label: "Förderungen", path: "/app/funding" },
+  { label: "Ihr KI-Plan", path: "/app/review" },
+  { label: "Beratung", path: "/app/submit" },
 ];
 
 interface StepperLayoutProps {
   children: React.ReactNode;
+  onNext?: () => Promise<void> | void;
+  nextLoading?: boolean;
+  nextDisabled?: boolean;
+  nextLabel?: string;
+  hideNext?: boolean;
 }
 
-export default function StepperLayout({ children }: StepperLayoutProps) {
+export default function StepperLayout({
+  children,
+  onNext,
+  nextLoading,
+  nextDisabled,
+  nextLabel,
+  hideNext,
+}: StepperLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const currentIndex = steps.findIndex((s) => s.path === location.pathname);
+  const activeIndex = currentIndex >= 0 ? currentIndex : 0;
 
   const handleBack = () => {
-    if (currentIndex === 0) {
+    if (activeIndex === 0) {
       navigate("/");
     } else {
-      navigate(steps[currentIndex - 1].path);
+      navigate(steps[activeIndex - 1].path);
     }
   };
 
-  const handleNext = () => {
-    if (currentIndex < steps.length - 1) {
-      navigate(steps[currentIndex + 1].path);
+  const handleNext = async () => {
+    if (onNext) {
+      await onNext();
+    } else if (activeIndex < steps.length - 1) {
+      navigate(steps[activeIndex + 1].path);
     }
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "background.default", py: 4 }}>
-      <Container maxWidth="md">
-        <Paper sx={{ p: { xs: 2, md: 4 }, mb: 3 }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
+      {/* Header */}
+      <Box
+        sx={{
+          bgcolor: "background.paper",
+          borderBottom: "1px solid",
+          borderColor: "divider",
+          px: 3,
+          py: 1.5,
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
+        <Typography
+          variant="h6"
+          fontWeight={700}
+          sx={{ color: "primary.main", letterSpacing: "-0.5px", cursor: "pointer" }}
+          onClick={() => navigate("/")}
+        >
+          .birdie
+        </Typography>
+      </Box>
+
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Paper sx={{ p: { xs: 2, md: 4 }, mb: 3, borderRadius: 3 }} elevation={2}>
           <Stepper
-            activeStep={currentIndex}
+            activeStep={activeIndex}
             alternativeLabel={!isMobile}
             orientation={isMobile ? "vertical" : "horizontal"}
             sx={{ mb: 4 }}
@@ -80,16 +118,24 @@ export default function StepperLayout({ children }: StepperLayoutProps) {
               variant="outlined"
               startIcon={<ArrowBackIcon />}
               onClick={handleBack}
+              disabled={nextLoading}
             >
-              {currentIndex === 0 ? "Dashboard" : "Back"}
+              {activeIndex === 0 ? "Startseite" : "Zurück"}
             </Button>
-            {currentIndex < steps.length - 1 && (
+            {!hideNext && activeIndex < steps.length - 1 && (
               <Button
                 variant="contained"
-                endIcon={<ArrowForwardIcon />}
+                endIcon={
+                  nextLoading ? (
+                    <CircularProgress size={18} color="inherit" />
+                  ) : (
+                    <ArrowForwardIcon />
+                  )
+                }
                 onClick={handleNext}
+                disabled={nextDisabled || nextLoading}
               >
-                Next
+                {nextLoading ? "Wird gespeichert..." : (nextLabel ?? "Weiter")}
               </Button>
             )}
           </Box>

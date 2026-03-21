@@ -2,364 +2,356 @@ import { useState } from "react";
 import {
   Box,
   Button,
-  Card,
-  CardContent,
-  Chip,
-  CircularProgress,
-  Collapse,
-  Divider,
+  Checkbox,
+  FormControlLabel,
+  FormGroup,
   Grid,
-  InputAdornment,
   MenuItem,
+  Slider,
   TextField,
   Typography,
+  Alert,
+  Divider,
 } from "@mui/material";
-import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
-import LanguageIcon from "@mui/icons-material/Language";
-import LinkedInIcon from "@mui/icons-material/LinkedIn";
-import EditIcon from "@mui/icons-material/Edit";
 import StepperLayout from "../components/StepperLayout";
+import { useNavigate } from "react-router-dom";
+import { createSession, saveCompany, saveAssessment } from "../services/api";
+import { useSession } from "../context/SessionContext";
 
-const companySizes = [
-  "1-10 employees",
-  "11-50 employees",
-  "51-250 employees",
-  "251-500 employees",
+const branches = [
+  "Handwerk",
+  "Bau & Immobilien",
+  "Einzelhandel",
+  "Gastronomie & Hotellerie",
+  "Produktion & Fertigung",
+  "Logistik & Transport",
+  "IT & Software",
+  "Beratung & Dienstleistung",
+  "Gesundheit & Pflege",
+  "Sonstiges",
 ];
 
-const industries = [
-  "Technology / IT",
-  "Manufacturing",
-  "Healthcare",
-  "Retail / E-Commerce",
-  "Construction",
-  "Energy",
-  "Agriculture",
-  "Education",
-  "Other",
+const bundeslaender = [
+  "Baden-Württemberg",
+  "Bayern",
+  "Berlin",
+  "Brandenburg",
+  "Bremen",
+  "Hamburg",
+  "Hessen",
+  "Mecklenburg-Vorpommern",
+  "Niedersachsen",
+  "Nordrhein-Westfalen",
+  "Rheinland-Pfalz",
+  "Saarland",
+  "Sachsen",
+  "Sachsen-Anhalt",
+  "Schleswig-Holstein",
+  "Thüringen",
 ];
 
-interface CompanyData {
-  companyName: string;
-  companySize: string;
-  industry: string;
-  street: string;
-  postalCode: string;
-  city: string;
-  state: string;
-  revenue: string;
-  yearFounded: string;
-  taxId: string;
-}
+const toolOptions = [
+  "Excel / Office",
+  "Buchhaltungssoftware (z. B. DATEV, Lexware)",
+  "ERP-System (z. B. SAP, Sage)",
+  "CRM-System",
+  "Handwerker-Software (z. B. Craftware, Streit)",
+  "Zeiterfassung digital",
+  "Cloud-Speicher",
+  "Kein digitales Tool",
+];
 
-const emptyData: CompanyData = {
-  companyName: "",
-  companySize: "",
-  industry: "",
-  street: "",
-  postalCode: "",
-  city: "",
-  state: "",
-  revenue: "",
-  yearFounded: "",
-  taxId: "",
+const schmerzPunkteOptions = [
+  "Papierbasierte Prozesse",
+  "Zeiterfassung noch analog",
+  "Keine digitale Kundenkommunikation",
+  "Lagerverwaltung unübersichtlich",
+  "Keine Online-Präsenz / Website",
+  "Manuelle Buchhaltung / Rechnungsstellung",
+  "Fehlende Auftragsverwaltung",
+  "Kein mobiler Zugriff für Außendienst",
+];
+
+const zielOptions = [
+  "Digitalisierung der Geschäftsprozesse",
+  "Einführung eines ERP-Systems",
+  "Aufbau eines Online-Shops",
+  "IT-Sicherheit verbessern",
+  "Digitales Marketing stärken",
+  "Mitarbeiter digital qualifizieren",
+  "Kundenkommunikation digitalisieren",
+  "Homeoffice / Remote Work ermöglichen",
+];
+
+const digitalisierungsGradLabels: { [k: number]: string } = {
+  1: "Kaum digital",
+  2: "Erste Schritte",
+  3: "Teilweise digital",
+  4: "Weitgehend digital",
+  5: "Voll digitalisiert",
 };
 
-type AiFilledFields = Partial<Record<keyof CompanyData, boolean>>;
-
-type Mode = "choose" | "importing" | "imported" | "manual";
-
-async function fetchCompanyFromUrl(
-  url: string
-): Promise<{ data: Partial<CompanyData>; aiFields: AiFilledFields }> {
-  // TODO: Replace with real backend call:
-  //   const res = await fetch("/api/company/import", {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify({ url }),
-  //   });
-  //   return res.json();
-
-  await new Promise((r) => setTimeout(r, 2000));
-
-  let domain = "";
-  try {
-    domain = new URL(url).hostname.replace("www.", "");
-  } catch {
-    domain = url;
-  }
-  const name = domain.split(".")[0];
-  const capitalized = name.charAt(0).toUpperCase() + name.slice(1);
-
-  return {
-    data: {
-      companyName: capitalized,
-      companySize: "51-250 employees",
-      industry: "Technology / IT",
-      street: "Musterstraße 1",
-      postalCode: "53113",
-      city: "Bonn",
-      state: "Nordrhein-Westfalen",
-      yearFounded: "1969",
-    },
-    aiFields: {
-      companyName: true,
-      companySize: true,
-      industry: true,
-      street: true,
-      postalCode: true,
-      city: true,
-      state: true,
-      yearFounded: true,
-    },
-  };
-}
-
 export default function CompanyInfo() {
-  const [mode, setMode] = useState<Mode>("choose");
-  const [url, setUrl] = useState("");
-  const [form, setForm] = useState<CompanyData>(emptyData);
-  const [aiFields, setAiFields] = useState<AiFilledFields>({});
+  const navigate = useNavigate();
+  const { setSessionId, setCompanyName } = useSession();
 
-  const updateField = (field: keyof CompanyData, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+  const [name, setName] = useState("");
+  const [branche, setBranche] = useState("");
+  const [mitarbeiter, setMitarbeiter] = useState("");
+  const [plz, setPlz] = useState("");
+  const [bundesland, setBundesland] = useState("");
+
+  const [aktivTools, setAktivTools] = useState<string[]>([]);
+  const [schmerzPunkte, setSchmerzPunkte] = useState<string[]>([]);
+  const [ziel, setZiel] = useState("");
+  const [digitGrad, setDigitGrad] = useState<number>(2);
+  const [budget, setBudget] = useState("");
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const toggleCheck = (
+    val: string,
+    list: string[],
+    setList: (v: string[]) => void
+  ) => {
+    setList(
+      list.includes(val) ? list.filter((x) => x !== val) : [...list, val]
+    );
   };
 
-  const handleImport = async () => {
-    if (!url.trim()) return;
-    setMode("importing");
+  const isValid =
+    name.trim() &&
+    branche &&
+    mitarbeiter &&
+    parseInt(mitarbeiter) > 0 &&
+    plz.trim().length >= 4 &&
+    ziel;
+
+  const handleNext = async () => {
+    if (!isValid) return;
+    setLoading(true);
+    setError(null);
     try {
-      const result = await fetchCompanyFromUrl(url);
-      setForm((prev) => ({ ...prev, ...result.data }));
-      setAiFields(result.aiFields);
-      setMode("imported");
-    } catch {
-      setMode("choose");
+      const session = await createSession();
+      const sid = session.id;
+      setSessionId(sid);
+      setCompanyName(name.trim());
+
+      await saveCompany({
+        session_id: sid,
+        name: name.trim(),
+        branche,
+        mitarbeiter_anzahl: parseInt(mitarbeiter),
+        plz: plz.trim(),
+        bundesland: bundesland || undefined,
+      });
+
+      await saveAssessment({
+        session_id: sid,
+        aktuelle_tools: aktivTools,
+        schmerz_punkte: schmerzPunkte,
+        digitalisierungs_grad: digitGrad,
+        ziel,
+        budget_vorstellung: budget.trim() || undefined,
+      });
+
+      navigate("/app/funding");
+    } catch (e: unknown) {
+      setError(
+        e instanceof Error ? e.message : "Fehler beim Speichern. Bitte erneut versuchen."
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
-  const badge = (field: keyof CompanyData) =>
-    aiFields[field] ? (
-      <Chip
-        icon={<AutoFixHighIcon />}
-        label="Auto-filled"
-        size="small"
-        color="secondary"
-        variant="outlined"
-        sx={{
-          mt: 0.5,
-          height: 22,
-          "& .MuiChip-label": { px: 0.5, fontSize: "0.7rem" },
-        }}
-      />
-    ) : null;
-
   return (
-    <StepperLayout>
-      <Typography variant="h5" gutterBottom>
-        Tell us about your company
+    <StepperLayout
+      onNext={handleNext}
+      nextLoading={loading}
+      nextDisabled={!isValid}
+      hideNext
+    >
+      <Typography variant="h5" fontWeight={700} gutterBottom>
+        Ihr Unternehmen
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Paste a link and we'll fill in your details automatically — or enter
-        them manually.
+        Geben Sie Ihre Unternehmensdaten ein, damit wir passende Förderprogramme
+        und einen individuellen KI-Plan erstellen können.
       </Typography>
 
-      <Collapse in={mode === "choose" || mode === "importing"}>
-        <Card
-          variant="outlined"
-          sx={{
-            mb: 3,
-            borderColor: "primary.light",
-            borderWidth: 2,
-            bgcolor: "primary.50",
-          }}
-        >
-          <CardContent sx={{ py: 3 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-              <AutoFixHighIcon color="primary" />
-              <Typography variant="h6" sx={{ fontSize: "1rem" }}>
-                Quick fill — paste a link
-              </Typography>
-            </Box>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Provide your company's LinkedIn page, website, or any public
-              profile and our AI will extract the details for you.
-            </Typography>
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
+      )}
 
-            <Box sx={{ display: "flex", gap: 1 }}>
-              <TextField
-                placeholder="https://linkedin.com/company/… or https://yourcompany.de"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                size="small"
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        {url.includes("linkedin") ? (
-                          <LinkedInIcon color="primary" />
-                        ) : (
-                          <LanguageIcon color="action" />
-                        )}
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-              />
-              <Button
-                variant="contained"
-                onClick={handleImport}
-                disabled={!url.trim() || mode === "importing"}
-                sx={{ whiteSpace: "nowrap", minWidth: 120 }}
-              >
-                {mode === "importing" ? (
-                  <CircularProgress size={22} color="inherit" />
-                ) : (
-                  "Import"
-                )}
-              </Button>
-            </Box>
-
-            <Divider sx={{ my: 2 }} />
-
-            <Button
-              size="small"
-              startIcon={<EditIcon />}
-              onClick={() => setMode("manual")}
-            >
-              I'll fill it in manually instead
-            </Button>
-          </CardContent>
-        </Card>
-      </Collapse>
-
-      <Collapse in={mode === "imported"}>
-        <Card
-          variant="outlined"
-          sx={{ mb: 3, borderColor: "secondary.main", bgcolor: "#e0f2f1" }}
-        >
-          <CardContent
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              py: "12px !important",
-            }}
+      <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
+        Unternehmensdaten
+      </Typography>
+      <Grid container spacing={2.5} sx={{ mb: 4 }}>
+        <Grid size={{ xs: 12 }}>
+          <TextField
+            label="Firmenname *"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            fullWidth
+          />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <TextField
+            label="Branche *"
+            select
+            value={branche}
+            onChange={(e) => setBranche(e.target.value)}
+            fullWidth
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <AutoFixHighIcon color="secondary" />
-              <Typography variant="body2">
-                We imported details from <strong>{url}</strong> — review and
-                adjust below.
-              </Typography>
-            </Box>
-          </CardContent>
-        </Card>
-      </Collapse>
+            {branches.map((b) => (
+              <MenuItem key={b} value={b}>
+                {b}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <TextField
+            label="Anzahl Mitarbeiter *"
+            type="number"
+            value={mitarbeiter}
+            onChange={(e) => setMitarbeiter(e.target.value)}
+            fullWidth
+            slotProps={{ htmlInput: { min: 1 } }}
+          />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 4 }}>
+          <TextField
+            label="PLZ *"
+            value={plz}
+            onChange={(e) => setPlz(e.target.value)}
+            fullWidth
+          />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 8 }}>
+          <TextField
+            label="Bundesland"
+            select
+            value={bundesland}
+            onChange={(e) => setBundesland(e.target.value)}
+            fullWidth
+          >
+            <MenuItem value="">-- Bitte wählen --</MenuItem>
+            {bundeslaender.map((bl) => (
+              <MenuItem key={bl} value={bl}>
+                {bl}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+      </Grid>
 
-      <Collapse in={mode === "imported" || mode === "manual"}>
-        <Box component="form" noValidate>
-          <Grid container spacing={3}>
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                label="Company Name"
-                required
-                value={form.companyName}
-                onChange={(e) => updateField("companyName", e.target.value)}
+      <Divider sx={{ mb: 3 }} />
+
+      <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1 }}>
+        Ihr aktueller Digitalstatus
+      </Typography>
+
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+        Welche digitalen Tools nutzen Sie bereits?
+      </Typography>
+      <FormGroup sx={{ mb: 3, display: "flex", flexDirection: "row", flexWrap: "wrap" }}>
+        {toolOptions.map((t) => (
+          <FormControlLabel
+            key={t}
+            control={
+              <Checkbox
+                checked={aktivTools.includes(t)}
+                onChange={() => toggleCheck(t, aktivTools, setAktivTools)}
+                size="small"
               />
-              {badge("companyName")}
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
-                label="Company Size"
-                select
-                required
-                value={form.companySize}
-                onChange={(e) => updateField("companySize", e.target.value)}
-              >
-                {companySizes.map((s) => (
-                  <MenuItem key={s} value={s}>
-                    {s}
-                  </MenuItem>
-                ))}
-              </TextField>
-              {badge("companySize")}
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
-                label="Industry"
-                select
-                required
-                value={form.industry}
-                onChange={(e) => updateField("industry", e.target.value)}
-              >
-                {industries.map((i) => (
-                  <MenuItem key={i} value={i}>
-                    {i}
-                  </MenuItem>
-                ))}
-              </TextField>
-              {badge("industry")}
-            </Grid>
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                label="Street Address"
-                value={form.street}
-                onChange={(e) => updateField("street", e.target.value)}
+            }
+            label={<Typography variant="body2">{t}</Typography>}
+            sx={{ width: { xs: "100%", sm: "50%" }, mr: 0 }}
+          />
+        ))}
+      </FormGroup>
+
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+        Wo drückt der Schuh? (Schmerzpunkte)
+      </Typography>
+      <FormGroup sx={{ mb: 3, display: "flex", flexDirection: "row", flexWrap: "wrap" }}>
+        {schmerzPunkteOptions.map((s) => (
+          <FormControlLabel
+            key={s}
+            control={
+              <Checkbox
+                checked={schmerzPunkte.includes(s)}
+                onChange={() => toggleCheck(s, schmerzPunkte, setSchmerzPunkte)}
+                size="small"
               />
-              {badge("street")}
-            </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
-                label="Postal Code"
-                value={form.postalCode}
-                onChange={(e) => updateField("postalCode", e.target.value)}
-              />
-              {badge("postalCode")}
-            </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
-                label="City"
-                value={form.city}
-                onChange={(e) => updateField("city", e.target.value)}
-              />
-              {badge("city")}
-            </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
-                label="State (Bundesland)"
-                value={form.state}
-                onChange={(e) => updateField("state", e.target.value)}
-              />
-              {badge("state")}
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
-                label="Annual Revenue (EUR)"
-                type="number"
-                value={form.revenue}
-                onChange={(e) => updateField("revenue", e.target.value)}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
-                label="Year Founded"
-                type="number"
-                value={form.yearFounded}
-                onChange={(e) => updateField("yearFounded", e.target.value)}
-              />
-              {badge("yearFounded")}
-            </Grid>
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                label="Tax ID (Steuernummer)"
-                value={form.taxId}
-                onChange={(e) => updateField("taxId", e.target.value)}
-              />
-            </Grid>
-          </Grid>
-        </Box>
-      </Collapse>
+            }
+            label={<Typography variant="body2">{s}</Typography>}
+            sx={{ width: { xs: "100%", sm: "50%" }, mr: 0 }}
+          />
+        ))}
+      </FormGroup>
+
+      <Grid container spacing={2.5}>
+        <Grid size={{ xs: 12 }}>
+          <TextField
+            label="Hauptziel der Digitalisierung *"
+            select
+            value={ziel}
+            onChange={(e) => setZiel(e.target.value)}
+            fullWidth
+          >
+            {zielOptions.map((z) => (
+              <MenuItem key={z} value={z}>
+                {z}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+        <Grid size={{ xs: 12 }}>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            Aktueller Digitalisierungsgrad:{" "}
+            <strong>{digitalisierungsGradLabels[digitGrad]}</strong>
+          </Typography>
+          <Slider
+            value={digitGrad}
+            onChange={(_, v) => setDigitGrad(v as number)}
+            min={1}
+            max={5}
+            step={1}
+            marks={[1, 2, 3, 4, 5].map((v) => ({
+              value: v,
+              label: String(v),
+            }))}
+            sx={{ mt: 1 }}
+          />
+        </Grid>
+        <Grid size={{ xs: 12 }}>
+          <TextField
+            label="Budgetvorstellung (optional, z. B. 10.000 - 30.000 EUR)"
+            value={budget}
+            onChange={(e) => setBudget(e.target.value)}
+            fullWidth
+          />
+        </Grid>
+      </Grid>
+
+      <Box sx={{ mt: 4 }}>
+        <Button
+          variant="contained"
+          size="large"
+          fullWidth
+          disabled={!isValid || loading}
+          onClick={handleNext}
+          sx={{ py: 1.5, fontWeight: 700 }}
+        >
+          {loading ? "Wird gespeichert..." : "Weiter: Förderungen finden"}
+        </Button>
+      </Box>
     </StepperLayout>
   );
 }

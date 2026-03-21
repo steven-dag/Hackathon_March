@@ -20,21 +20,22 @@ from typing import List, Dict, Any
 
 STATIC_GRANTS: List[Dict[str, Any]] = [
     {
-        "programm_name": "Digital Jetzt – Investitionsförderung für KMU",
+        "programm_name": "Digitalbonus (Länderprogramme – regional)",
         "beschreibung": (
-            "Bundesförderung für kleine und mittlere Unternehmen zur Digitalisierung "
-            "von Geschäftsprozessen und der Qualifizierung der Mitarbeitenden. "
-            "Zuschuss nicht rückzahlbar."
+            "Viele Bundesländer (u. a. Bayern, NRW, Thüringen, Sachsen) bieten eigene "
+            "Digitalbonus-Programme als Nachfolge zu Digital Jetzt. "
+            "Zuschüsse von bis zu 50.000 EUR für Hard- und Software, IT-Sicherheit und "
+            "digitale Prozesse – nicht rückzahlbar. Konditionen je nach Bundesland."
         ),
         "foerder_summe_max": 50000.0,
-        "foerder_quote_prozent": 40.0,
-        "quelle_url": "https://www.digitaljetzt-portal.de",
-        "antragsteller": "KMU mit 3–499 Mitarbeitenden",
-        "frist": "Laufend",
+        "foerder_quote_prozent": 50.0,
+        "quelle_url": "https://www.foerderdatenbank.de/FDB/DE/Foerderprogramme/foerderprogramme.html",
+        "antragsteller": "KMU mit bis zu 250 Mitarbeitenden",
+        "frist": "Je nach Bundesland",
         "branchen": ["alle"],
-        "min_mitarbeiter": 3,
-        "max_mitarbeiter": 499,
-        "schlagworte": ["software", "digitalisierung", "prozesse", "erp", "crm"],
+        "min_mitarbeiter": 1,
+        "max_mitarbeiter": 250,
+        "schlagworte": ["software", "digitalisierung", "prozesse", "erp", "crm", "it-sicherheit"],
     },
     {
         "programm_name": "BAFA – Förderung unternehmerischen Know-hows",
@@ -71,21 +72,38 @@ STATIC_GRANTS: List[Dict[str, Any]] = [
         "schlagworte": ["software", "hardware", "it", "app", "digitalisierung"],
     },
     {
-        "programm_name": "go-digital – Förderung digitaler Kompetenzen",
+        "programm_name": "Mittelstand-Digital Zentren (BMWK – kostenfreie Beratung)",
         "beschreibung": (
-            "BMWK-Förderprogramm für KMU und Handwerksbetriebe. "
-            "Gefördert werden Beratungsleistungen in den Modulen: "
-            "Digitalisierte Geschäftsprozesse, Digitale Markterschließung, IT-Sicherheit."
+            "Das BMWK fördert bundesweit 16 Mittelstand-Digital Zentren, die KMU und "
+            "Handwerksbetriebe kostenlos bei der Digitalisierung beraten. "
+            "Themen: KI, E-Commerce, IT-Sicherheit, digitale Prozesse und mehr."
         ),
-        "foerder_summe_max": 16500.0,
-        "foerder_quote_prozent": 50.0,
-        "quelle_url": "https://www.innovation-beratung-foerderung.de/INNO/Navigation/DE/go-digital/go-digital.html",
-        "antragsteller": "KMU mit bis zu 100 Mitarbeitenden, max. 20 Mio € Jahresumsatz",
+        "foerder_summe_max": None,
+        "foerder_quote_prozent": 100.0,
+        "quelle_url": "https://www.mittelstand-digital.de/MD/Navigation/DE/Foerderprogramm/foerderprogramm.html",
+        "antragsteller": "KMU und Handwerksbetriebe (alle Größen)",
+        "frist": "Laufend bis 2026",
+        "branchen": ["alle"],
+        "min_mitarbeiter": 1,
+        "max_mitarbeiter": 499,
+        "schlagworte": ["beratung", "digitalisierung", "prozesse", "ki", "it-sicherheit", "handwerk"],
+    },
+    {
+        "programm_name": "ZIM – Zentrales Innovationsprogramm Mittelstand",
+        "beschreibung": (
+            "Bundesförderung für Forschungs- und Entwicklungsprojekte von KMU. "
+            "Zuschüsse für innovative Digitallösungen, Softwareentwicklung und "
+            "technologische Neuentwicklungen. Bis zu 45% der Projektkosten gefördert."
+        ),
+        "foerder_summe_max": 380000.0,
+        "foerder_quote_prozent": 45.0,
+        "quelle_url": "https://www.zim.de",
+        "antragsteller": "KMU mit bis zu 499 Mitarbeitenden",
         "frist": "Laufend",
         "branchen": ["alle"],
         "min_mitarbeiter": 1,
-        "max_mitarbeiter": 100,
-        "schlagworte": ["prozesse", "it-sicherheit", "digitalisierung", "beratung", "handwerk"],
+        "max_mitarbeiter": 499,
+        "schlagworte": ["software", "entwicklung", "innovation", "ki", "digitalisierung"],
     },
     {
         "programm_name": "Handwerk Digital (HWK-Programme – regional)",

@@ -103,6 +103,18 @@ async function get<T>(path: string): Promise<T> {
   return res.json();
 }
 
+// Company Lookup
+export interface LookupResult {
+  name?: string | null;
+  branche?: string | null;
+  mitarbeiter?: string | null;
+  plz?: string | null;
+  bundesland?: string | null;
+  beschreibung?: string | null;
+}
+export const lookupCompany = (query: string) =>
+  post<LookupResult>("/api/onboarding/lookup", { query });
+
 // Sessions
 export const createSession = () => post<Session>("/api/onboarding/session");
 

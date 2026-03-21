@@ -39,50 +39,34 @@ def generate_digitalization_plan(
          for g in matched_grants[:3]]
     ) or "Keine spezifischen Programme gefunden"
 
-    zeitraum = 12 if ziel in ["SaaS", "Komplettlösung"] else 6
+    prompt = f"""Digitalisierungsberater für deutsche KMU. Antworte NUR als valides JSON.
 
-    prompt = f"""Du bist ein erfahrener Digitalisierungsberater für deutsche Handwerks- und KMU-Betriebe.
-Du erstellst strukturierte, realistische Digitalisierungspläne auf Deutsch.
-Antworte IMMER als valides JSON ohne Markdown-Codeblöcke.
-Sei konkret und praxisnah.
+Firma: {company_name} | Branche: {branche} | Mitarbeiter: {mitarbeiter}
+Tools: {', '.join(aktuelle_tools[:3])} | Probleme: {', '.join(schmerz_punkte[:3])}
+Ziel: {ziel} | Budget: {budget_vorstellung or 'offen'}
+Förderungen: {grants_summary[:200]}
 
-Erstelle einen Digitalisierungsplan für folgendes Unternehmen:
-
-Unternehmen: {company_name}
-Branche: {branche}
-Mitarbeiter: {mitarbeiter}
-Aktuell genutzte Tools: {', '.join(aktuelle_tools)}
-Schmerzpunkte: {', '.join(schmerz_punkte)}
-Ziel: {ziel}
-Budget: {budget_vorstellung or 'nicht angegeben'}
-
-Passende Förderprogramme:
-{grants_summary}
-
-Erstelle einen Plan für {zeitraum} Monate als JSON mit exakt dieser Struktur:
+Erstelle einen 12-Monats-Plan. "phasen" = GENAU 12 Einträge (Monat 1 bis Monat 12), je max. 2 Maßnahmen.
 {{
-  "zusammenfassung": "2-3 Sätze Zusammenfassung",
-  "zeitraum_monate": {zeitraum},
+  "zusammenfassung": "2-3 Sätze",
+  "zeitraum_monate": 12,
   "phasen": [
-    {{
-      "monat": "Monat 1-2",
-      "titel": "Titel der Phase",
-      "beschreibung": "Was passiert in dieser Phase",
-      "massnahmen": ["Maßnahme 1", "Maßnahme 2"],
-      "kosten_geschaetzt": 2500.0
-    }}
+    {{"monat":"Monat 1","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":1500}},
+    {{"monat":"Monat 2","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":2000}},
+    {{"monat":"Monat 3","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":2000}},
+    {{"monat":"Monat 4","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":2500}},
+    {{"monat":"Monat 5","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":2500}},
+    {{"monat":"Monat 6","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":1000}},
+    {{"monat":"Monat 7","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":2000}},
+    {{"monat":"Monat 8","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":2000}},
+    {{"monat":"Monat 9","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":1500}},
+    {{"monat":"Monat 10","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":1500}},
+    {{"monat":"Monat 11","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":1000}},
+    {{"monat":"Monat 12","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":500}}
   ],
-  "kosten_aufstellung": {{
-    "entwicklung": 15000.0,
-    "lizenzen": 3000.0,
-    "beratung": 5000.0,
-    "hardware": 0.0,
-    "gesamt": 23000.0,
-    "foerderung_abzug": 9200.0,
-    "eigenanteil": 13800.0
-  }},
-  "empfohlene_foerderungen": ["Programmname 1", "Programmname 2"],
-  "naechste_schritte": ["Schritt 1", "Schritt 2", "Schritt 3"]
+  "kosten_aufstellung": {{"entwicklung":0,"lizenzen":0,"beratung":0,"hardware":0,"gesamt":0,"foerderung_abzug":0,"eigenanteil":0}},
+  "empfohlene_foerderungen": ["..."],
+  "naechste_schritte": ["...","...","..."]
 }}"""
 
     response = client.models.generate_content(
@@ -90,6 +74,7 @@ Erstelle einen Plan für {zeitraum} Monate als JSON mit exakt dieser Struktur:
         contents=prompt,
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
+            thinking_config=types.ThinkingConfig(thinking_budget=0),
         ),
     )
 

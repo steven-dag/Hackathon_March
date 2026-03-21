@@ -14,11 +14,12 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import BirdLogo from "./BirdLogo";
 
 const steps = [
   { label: "Firmendaten", path: "/app/company" },
   { label: "Förderungen", path: "/app/funding" },
-  { label: "Ihr KI-Plan", path: "/app/review" },
+  { label: "Digitalplan", path: "/app/review" },
   { label: "Beratung", path: "/app/submit" },
 ];
 
@@ -64,36 +65,52 @@ export default function StepperLayout({
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: "#f8f9fc" }}>
       {/* Header */}
       <Box
         sx={{
-          bgcolor: "background.paper",
-          borderBottom: "1px solid",
-          borderColor: "divider",
-          px: 3,
-          py: 1.5,
+          bgcolor: "#0a0a0a",
+          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          px: { xs: 3, md: 6 },
+          py: 1.8,
           display: "flex",
           alignItems: "center",
+          justifyContent: "space-between",
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
         }}
       >
-        <Typography
-          variant="h6"
-          fontWeight={700}
-          sx={{ color: "primary.main", letterSpacing: "-0.5px", cursor: "pointer" }}
-          onClick={() => navigate("/")}
-        >
-          .birdie
+        <Box sx={{ cursor: "pointer" }} onClick={() => navigate("/")}>
+          <BirdLogo light />
+        </Box>
+        {/* Step indicator */}
+        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.35)", fontWeight: 600 }}>
+          Schritt {activeIndex + 1} von {steps.length}
         </Typography>
       </Box>
 
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Paper sx={{ p: { xs: 2, md: 4 }, mb: 3, borderRadius: 3 }} elevation={2}>
+      <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
+        <Paper
+          sx={{
+            p: { xs: 2.5, md: 5 },
+            mb: 3,
+            borderRadius: 3,
+            boxShadow: "0 4px 24px rgba(0,0,0,0.07)",
+            border: "1px solid rgba(0,0,0,0.06)",
+          }}
+          elevation={0}
+        >
           <Stepper
             activeStep={activeIndex}
             alternativeLabel={!isMobile}
             orientation={isMobile ? "vertical" : "horizontal"}
-            sx={{ mb: 4 }}
+            sx={{
+              mb: 4,
+              "& .MuiStepLabel-label": { fontWeight: 600, fontSize: "0.8rem" },
+              "& .MuiStepIcon-root.Mui-active": { color: "#0a0a0a" },
+              "& .MuiStepIcon-root.Mui-completed": { color: "#4ADE80" },
+            }}
           >
             {steps.map((step) => (
               <Step key={step.label}>
@@ -110,8 +127,7 @@ export default function StepperLayout({
               justifyContent: "space-between",
               mt: 4,
               pt: 3,
-              borderTop: "1px solid",
-              borderColor: "divider",
+              borderTop: "1px solid rgba(0,0,0,0.08)",
             }}
           >
             <Button
@@ -119,6 +135,7 @@ export default function StepperLayout({
               startIcon={<ArrowBackIcon />}
               onClick={handleBack}
               disabled={nextLoading}
+              sx={{ borderColor: "rgba(0,0,0,0.15)", color: "text.secondary", fontWeight: 600 }}
             >
               {activeIndex === 0 ? "Startseite" : "Zurück"}
             </Button>
@@ -134,6 +151,12 @@ export default function StepperLayout({
                 }
                 onClick={handleNext}
                 disabled={nextDisabled || nextLoading}
+                sx={{
+                  bgcolor: "#0a0a0a",
+                  fontWeight: 700,
+                  "&:hover": { bgcolor: "#222" },
+                  "&:disabled": { bgcolor: "rgba(0,0,0,0.12)" },
+                }}
               >
                 {nextLoading ? "Wird gespeichert..." : (nextLabel ?? "Weiter")}
               </Button>

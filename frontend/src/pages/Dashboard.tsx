@@ -1,278 +1,319 @@
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Container,
-  Typography,
-  Grid,
-  Chip,
-} from "@mui/material";
+import { Box, Button, Container, Typography, Grid, Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import AutoGraphIcon from "@mui/icons-material/AutoGraph";
-import EuroIcon from "@mui/icons-material/Euro";
-import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
+import BirdLogo from "../components/BirdLogo";
 
-const benefits = [
-  {
-    icon: <AutoGraphIcon sx={{ fontSize: 44 }} />,
-    title: "KI-Analyse in Minuten",
-    description:
-      "Unser KI-System analysiert Ihr Unternehmen und erstellt einen maßgeschneiderten Digitalisierungsplan – kostenlos und in unter 10 Minuten.",
-  },
-  {
-    icon: <EuroIcon sx={{ fontSize: 44 }} />,
-    title: "Bis zu 50 % Förderung",
-    description:
-      "Wir finden passende Förderprogramme von Bund und Ländern – Digital Jetzt, BAFA, KfW, go-digital und weitere – die Sie direkt beantragen können.",
-  },
-  {
-    icon: <RocketLaunchIcon sx={{ fontSize: 44 }} />,
-    title: "Klarer Fahrplan",
-    description:
-      "Sie erhalten einen konkreten 12-Monats-Plan mit Maßnahmen, Zeitrahmen und einer detaillierten Kostenaufstellung inklusive Förderabzug.",
-  },
+const stats = [
+  { value: "50%", label: "max. Förderung" },
+  { value: "5 Min.", label: "bis zum Plan" },
+  { value: "100%", label: "kostenlos" },
+  { value: "12 Mon.", label: "Fahrplan" },
 ];
 
 const steps = [
-  "Unternehmensdaten & Digitalstatus eingeben",
-  "Passende Förderprogramme entdecken",
-  "KI-Digitalisierungsplan erhalten",
-  "Kostenlose Beratung buchen",
+  {
+    num: "01",
+    title: "Firmendaten eingeben",
+    desc: "Branche, Mitarbeiter, aktuelle Tools und Ziele – in unter 3 Minuten ausgefüllt.",
+  },
+  {
+    num: "02",
+    title: "Förderprogramme entdecken",
+    desc: "Wir matchen Ihr Unternehmen mit BAFA, KfW, Digitalbonus und weiteren Programmen.",
+  },
+  {
+    num: "03",
+    title: "Digitalplan erhalten",
+    desc: "Ihr persönlicher 12-Monats-Fahrplan – konkret, realistisch, förderfähig.",
+  },
+  {
+    num: "04",
+    title: "Beratung buchen",
+    desc: "Kostenloser 30-Minuten-Termin. Wir klären alles – und beantragen gemeinsam.",
+  },
+];
+
+const painPoints = [
+  "Papierberge statt digitaler Prozesse",
+  "Fördermittel ungenutzt verfallen",
+  "Keine Zeit für Digitalisierung",
+  "Keine Ahnung, wo anfangen",
 ];
 
 export default function Dashboard() {
   const navigate = useNavigate();
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
-      {/* Header */}
+    <Box sx={{ minHeight: "100vh", bgcolor: "#0a0a0a", color: "white" }}>
+      {/* ── NAV ── */}
       <Box
         sx={{
-          bgcolor: "background.paper",
-          borderBottom: "1px solid",
-          borderColor: "divider",
-          px: 3,
-          py: 1.5,
+          px: { xs: 3, md: 6 },
+          py: 2,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
+          bgcolor: "rgba(10,10,10,0.92)",
+          backdropFilter: "blur(12px)",
         }}
       >
-        <Typography
-          variant="h6"
-          fontWeight={700}
-          sx={{ color: "primary.main", letterSpacing: "-0.5px" }}
-        >
-          .birdie
-        </Typography>
+        <BirdLogo light />
         <Button
           variant="contained"
-          size="small"
           onClick={() => navigate("/app/company")}
-          sx={{ borderRadius: 8 }}
+          sx={{
+            bgcolor: "#4ADE80",
+            color: "#0a0a0a",
+            fontWeight: 700,
+            fontSize: "0.85rem",
+            px: 3,
+            py: 1,
+            borderRadius: 8,
+            "&:hover": { bgcolor: "#22c55e" },
+          }}
         >
-          Jetzt starten
+          Kostenlos starten
         </Button>
       </Box>
 
-      {/* Hero */}
-      <Box
-        sx={{
-          background:
-            "linear-gradient(135deg, #0D47A1 0%, #1565C0 40%, #00695C 100%)",
-          color: "white",
-          py: { xs: 8, md: 14 },
-          px: 2,
-        }}
-      >
-        <Container maxWidth="md" sx={{ textAlign: "center" }}>
-          <Chip
-            label="🐦 KI-gestützte Digitalisierung"
-            sx={{
-              mb: 3,
-              bgcolor: "rgba(255,255,255,0.15)",
-              color: "white",
-              fontWeight: 600,
-              fontSize: "0.85rem",
-              backdropFilter: "blur(4px)",
-            }}
-          />
-          <Typography
-            variant="h2"
-            gutterBottom
-            sx={{ fontWeight: 800, fontSize: { xs: "2.2rem", md: "3.2rem" }, letterSpacing: "-1px" }}
-          >
-            Ihr Weg in die
-            <br />
-            digitale Zukunft.
-          </Typography>
-          <Typography
-            variant="h6"
-            sx={{
-              mb: 5,
-              fontWeight: 400,
-              opacity: 0.9,
-              maxWidth: 580,
-              mx: "auto",
-              lineHeight: 1.7,
-            }}
-          >
-            .birdie erstellt für Ihr Handwerks- oder KMU-Unternehmen einen
-            KI-generierten Digitalisierungsplan – inklusive passender
-            Fördermittel aus über 5 deutschen Förderdatenbanken.
-          </Typography>
+      {/* ── HERO ── */}
+      <Box sx={{ px: { xs: 3, md: 6 }, pt: { xs: 8, md: 12 }, pb: { xs: 6, md: 10 }, maxWidth: 900, mx: "auto" }}>
+        <Chip
+          label="KI-gestützte Digitalisierungsberatung"
+          sx={{
+            mb: 4,
+            bgcolor: "rgba(74,222,128,0.12)",
+            color: "#4ADE80",
+            fontWeight: 600,
+            fontSize: "0.8rem",
+            border: "1px solid rgba(74,222,128,0.3)",
+          }}
+        />
+        <Typography
+          variant="h1"
+          sx={{
+            fontSize: { xs: "2.8rem", md: "5rem" },
+            fontWeight: 900,
+            lineHeight: 1.05,
+            letterSpacing: "-2px",
+            mb: 3,
+          }}
+        >
+          Digitalisierung.
+          <br />
+          <Box component="span" sx={{ color: "#4ADE80" }}>
+            Endlich einfach.
+          </Box>
+        </Typography>
+        <Typography
+          variant="h6"
+          sx={{
+            color: "rgba(255,255,255,0.55)",
+            fontWeight: 400,
+            lineHeight: 1.7,
+            maxWidth: 560,
+            mb: 5,
+            fontSize: { xs: "1rem", md: "1.15rem" },
+          }}
+        >
+          .birdie erstellt für Ihr Handwerks- oder KMU-Unternehmen einen
+          maßgeschneiderten Digitalplan – inklusive passender Fördermittel
+          von Bund und Ländern. In 5 Minuten. Kostenlos.
+        </Typography>
+        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", alignItems: "center" }}>
           <Button
             variant="contained"
             size="large"
             onClick={() => navigate("/app/company")}
             sx={{
-              bgcolor: "white",
-              color: "primary.dark",
-              fontWeight: 700,
-              fontSize: "1.05rem",
-              "&:hover": { bgcolor: "grey.100" },
-              px: 6,
+              bgcolor: "#4ADE80",
+              color: "#0a0a0a",
+              fontWeight: 800,
+              fontSize: "1rem",
+              px: 5,
               py: 1.8,
               borderRadius: 8,
-              boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
+              "&:hover": { bgcolor: "#22c55e" },
+              boxShadow: "0 0 32px rgba(74,222,128,0.3)",
             }}
           >
-            Kostenlos starten
+            Jetzt Digitalplan erstellen →
           </Button>
-          <Typography variant="caption" sx={{ display: "block", mt: 2, opacity: 0.7 }}>
-            Kein Account nötig · Dauert nur 5 Minuten
+          <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.35)" }}>
+            Kein Account · Keine Kreditkarte
           </Typography>
-        </Container>
+        </Box>
       </Box>
 
-      {/* How it works */}
-      <Container maxWidth="md" sx={{ py: 8 }}>
-        <Typography
-          variant="overline"
-          color="primary"
-          sx={{ display: "block", textAlign: "center", mb: 1, fontWeight: 700 }}
-        >
-          So funktioniert es
-        </Typography>
-        <Typography variant="h4" textAlign="center" gutterBottom sx={{ fontWeight: 700, mb: 5 }}>
-          In 4 Schritten zum Förderplan
-        </Typography>
-        <Grid container spacing={2}>
-          {steps.map((step, i) => (
-            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={step}>
-              <Box sx={{ textAlign: "center", px: 1 }}>
-                <Box
-                  sx={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: "50%",
-                    bgcolor: "primary.main",
-                    color: "white",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontWeight: 800,
-                    fontSize: "1.2rem",
-                    mx: "auto",
-                    mb: 1.5,
-                  }}
-                >
-                  {i + 1}
-                </Box>
-                <Typography variant="body2" fontWeight={600}>
-                  {step}
-                </Typography>
-              </Box>
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
-
-      {/* Benefits */}
-      <Box sx={{ bgcolor: "grey.50", py: 8 }}>
+      {/* ── STATS ── */}
+      <Box sx={{ borderTop: "1px solid rgba(255,255,255,0.08)", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
         <Container maxWidth="md">
-          <Typography
-            variant="overline"
-            color="primary"
-            sx={{ display: "block", textAlign: "center", mb: 1, fontWeight: 700 }}
-          >
-            Warum .birdie?
-          </Typography>
-          <Typography variant="h4" textAlign="center" gutterBottom sx={{ fontWeight: 700, mb: 5 }}>
-            Ihr Vorteil auf einen Blick
-          </Typography>
-          <Grid container spacing={3}>
-            {benefits.map((b) => (
-              <Grid size={{ xs: 12, md: 4 }} key={b.title}>
-                <Card
-                  sx={{
-                    height: "100%",
-                    textAlign: "center",
-                    transition: "transform 0.2s, box-shadow 0.2s",
-                    "&:hover": {
-                      transform: "translateY(-4px)",
-                      boxShadow: "0 12px 40px rgba(0,0,0,0.1)",
-                    },
-                    borderRadius: 3,
-                  }}
-                  elevation={2}
-                >
-                  <CardContent sx={{ p: 4 }}>
-                    <Box sx={{ color: "primary.main", mb: 2 }}>{b.icon}</Box>
-                    <Typography variant="h6" gutterBottom fontWeight={700}>
-                      {b.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" lineHeight={1.7}>
-                      {b.description}
-                    </Typography>
-                  </CardContent>
-                </Card>
+          <Grid container>
+            {stats.map((s, i) => (
+              <Grid
+                size={{ xs: 6, md: 3 }}
+                key={s.label}
+                sx={{
+                  py: 4,
+                  textAlign: "center",
+                  borderRight: i < 3 ? "1px solid rgba(255,255,255,0.08)" : "none",
+                }}
+              >
+                <Typography variant="h3" fontWeight={900} sx={{ color: "#4ADE80", fontSize: { xs: "2rem", md: "2.5rem" } }}>
+                  {s.value}
+                </Typography>
+                <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.45)", mt: 0.5, fontWeight: 500 }}>
+                  {s.label}
+                </Typography>
               </Grid>
             ))}
           </Grid>
         </Container>
       </Box>
 
-      {/* CTA */}
+      {/* ── PAIN POINTS ── */}
+      <Box sx={{ bgcolor: "#111", py: { xs: 6, md: 10 } }}>
+        <Container maxWidth="md">
+          <Typography
+            variant="overline"
+            sx={{ color: "#4ADE80", fontWeight: 700, letterSpacing: 2, display: "block", mb: 2 }}
+          >
+            Kommt Ihnen das bekannt vor?
+          </Typography>
+          <Typography variant="h3" fontWeight={800} sx={{ mb: 5, fontSize: { xs: "1.8rem", md: "2.5rem" }, letterSpacing: "-1px" }}>
+            Digitalisierung fühlt sich an wie{" "}
+            <Box component="span" sx={{ color: "rgba(255,255,255,0.3)" }}>
+              ein Dschungel.
+            </Box>
+          </Typography>
+          <Grid container spacing={2}>
+            {painPoints.map((p) => (
+              <Grid size={{ xs: 12, sm: 6 }} key={p}>
+                <Box
+                  sx={{
+                    p: 3,
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    borderRadius: 2,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                    bgcolor: "rgba(255,255,255,0.02)",
+                    "&:hover": { borderColor: "rgba(74,222,128,0.3)", bgcolor: "rgba(74,222,128,0.04)" },
+                    transition: "all 0.2s",
+                  }}
+                >
+                  <Box sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: "rgba(255,255,255,0.2)", flexShrink: 0, mt: 0.8 }} />
+                  <Typography variant="body1" fontWeight={600} sx={{ color: "rgba(255,255,255,0.8)" }}>
+                    {p}
+                  </Typography>
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+          <Box sx={{ mt: 5, p: 3, bgcolor: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)", borderRadius: 2 }}>
+            <Typography variant="body1" fontWeight={600} sx={{ color: "#4ADE80" }}>
+              .birdie bringt Klarheit — in 5 Minuten, kostenlos.
+            </Typography>
+          </Box>
+        </Container>
+      </Box>
+
+      {/* ── HOW IT WORKS ── */}
+      <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: "#0a0a0a" }}>
+        <Container maxWidth="md">
+          <Typography
+            variant="overline"
+            sx={{ color: "#4ADE80", fontWeight: 700, letterSpacing: 2, display: "block", mb: 2 }}
+          >
+            So funktioniert's
+          </Typography>
+          <Typography variant="h3" fontWeight={800} sx={{ mb: 6, fontSize: { xs: "1.8rem", md: "2.5rem" }, letterSpacing: "-1px" }}>
+            Von 0 zum Förderplan in{" "}
+            <Box component="span" sx={{ color: "#4ADE80" }}>4 Schritten.</Box>
+          </Typography>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0 }}>
+            {steps.map((step, i) => (
+              <Box
+                key={step.num}
+                sx={{
+                  display: "flex",
+                  gap: 4,
+                  py: 3.5,
+                  borderBottom: i < steps.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none",
+                  alignItems: "flex-start",
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: "0.75rem",
+                    fontWeight: 800,
+                    color: "rgba(255,255,255,0.2)",
+                    minWidth: 32,
+                    letterSpacing: 1,
+                    mt: 0.5,
+                  }}
+                >
+                  {step.num}
+                </Typography>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="h6" fontWeight={700} sx={{ mb: 0.5 }}>
+                    {step.title}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.45)", lineHeight: 1.7 }}>
+                    {step.desc}
+                  </Typography>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        </Container>
+      </Box>
+
+      {/* ── CTA ── */}
       <Box
         sx={{
-          background: "linear-gradient(135deg, #00695C 0%, #0D47A1 100%)",
-          py: 8,
+          py: { xs: 8, md: 12 },
           textAlign: "center",
-          color: "white",
+          bgcolor: "#111",
+          borderTop: "1px solid rgba(255,255,255,0.06)",
         }}
       >
         <Container maxWidth="sm">
-          <Typography variant="h4" gutterBottom fontWeight={800}>
-            Bereit loszulegen?
+          <Typography variant="h3" fontWeight={900} sx={{ mb: 2, fontSize: { xs: "2rem", md: "3rem" }, letterSpacing: "-1px" }}>
+            Bereit für Ihren
+            <br />
+            <Box component="span" sx={{ color: "#4ADE80" }}>Digitalplan?</Box>
           </Typography>
-          <Typography variant="body1" sx={{ mb: 4, opacity: 0.9, lineHeight: 1.7 }}>
-            Erhalten Sie noch heute Ihren persönlichen Digitalisierungsplan mit
-            passenden Fördermitteln – völlig kostenlos.
+          <Typography variant="body1" sx={{ color: "rgba(255,255,255,0.45)", mb: 5, lineHeight: 1.7 }}>
+            Kostenlos, unverbindlich, in 5 Minuten. Kein Account erforderlich.
           </Typography>
           <Button
             variant="contained"
             size="large"
             onClick={() => navigate("/app/company")}
             sx={{
-              bgcolor: "white",
-              color: "primary.dark",
-              fontWeight: 700,
-              "&:hover": { bgcolor: "grey.100" },
+              bgcolor: "#4ADE80",
+              color: "#0a0a0a",
+              fontWeight: 800,
+              fontSize: "1rem",
               px: 6,
-              py: 1.8,
+              py: 2,
               borderRadius: 8,
+              "&:hover": { bgcolor: "#22c55e" },
+              boxShadow: "0 0 40px rgba(74,222,128,0.25)",
             }}
           >
-            Jetzt kostenlos starten
+            Jetzt kostenlos starten →
           </Button>
         </Container>
       </Box>
 
-      {/* Footer */}
-      <Box sx={{ bgcolor: "grey.900", color: "grey.400", py: 3, textAlign: "center" }}>
-        <Typography variant="caption">
+      {/* ── FOOTER ── */}
+      <Box sx={{ borderTop: "1px solid rgba(255,255,255,0.06)", py: 3, textAlign: "center" }}>
+        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.2)" }}>
           © 2026 .birdie · KI-Digitalisierungsberatung für den deutschen Mittelstand
         </Typography>
       </Box>

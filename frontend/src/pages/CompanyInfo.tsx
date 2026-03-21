@@ -3,9 +3,12 @@ import {
   Box,
   Button,
   Checkbox,
+  Chip,
+  CircularProgress,
   FormControlLabel,
   FormGroup,
   Grid,
+  InputAdornment,
   MenuItem,
   Slider,
   TextField,
@@ -13,9 +16,10 @@ import {
   Alert,
   Divider,
 } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 import StepperLayout from "../components/StepperLayout";
 import { useNavigate } from "react-router-dom";
-import { createSession, saveCompany, saveAssessment } from "../services/api";
+import { createSession, saveCompany, saveAssessment, lookupCompany } from "../services/api";
 import { useSession } from "../context/SessionContext";
 
 const branches = [
@@ -110,6 +114,33 @@ export default function CompanyInfo() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // ── Lookup state ──
+  const [lookupQuery, setLookupQuery] = useState("");
+  const [lookupLoading, setLookupLoading] = useState(false);
+  const [lookupFound, setLookupFound] = useState(false);
+  const [lookupDesc, setLookupDesc] = useState<string | null>(null);
+
+  const handleLookup = async () => {
+    if (!lookupQuery.trim()) return;
+    setLookupLoading(true);
+    setLookupFound(false);
+    setLookupDesc(null);
+    try {
+      const result = await lookupCompany(lookupQuery.trim());
+      if (result.name) setName(result.name);
+      if (result.branche && branches.includes(result.branche)) setBranche(result.branche);
+      if (result.mitarbeiter) setMitarbeiter(result.mitarbeiter);
+      if (result.plz) setPlz(result.plz);
+      if (result.bundesland && bundeslaender.includes(result.bundesland)) setBundesland(result.bundesland);
+      if (result.beschreibung) setLookupDesc(result.beschreibung);
+      setLookupFound(true);
+    } catch {
+      setError("Unternehmen konnte nicht gefunden werden. Bitte manuell ausfüllen.");
+    } finally {
+      setLookupLoading(false);
+    }
+  };
+
   const toggleCheck = (
     val: string,
     list: string[],
@@ -186,6 +217,68 @@ export default function CompanyInfo() {
           {error}
         </Alert>
       )}
+
+      {/* ── Company Lookup ── */}
+      <Box
+        sx={{
+          mb: 4,
+          p: 3,
+          border: "1px solid rgba(0,0,0,0.08)",
+          borderRadius: 2,
+          bgcolor: "#f8f9fc",
+        }}
+      >
+        <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5 }}>
+          Unternehmen automatisch finden
+        </Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 2 }}>
+          Website-URL oder Firmenname eingeben — wir füllen das Formular vor.
+        </Typography>
+        <Box sx={{ display: "flex", gap: 1.5, alignItems: "flex-start" }}>
+          <TextField
+            placeholder="z. B. musterbetrieb.de oder Muster GmbH Köln"
+            value={lookupQuery}
+            onChange={(e) => setLookupQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleLookup()}
+            size="small"
+            fullWidth
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" sx={{ color: "text.disabled" }} />
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+          <Button
+            variant="contained"
+            onClick={handleLookup}
+            disabled={!lookupQuery.trim() || lookupLoading}
+            sx={{
+              bgcolor: "#0a0a0a",
+              fontWeight: 700,
+              whiteSpace: "nowrap",
+              px: 2.5,
+              py: "6.5px",
+              "&:hover": { bgcolor: "#222" },
+            }}
+          >
+            {lookupLoading ? <CircularProgress size={18} color="inherit" /> : "Suchen"}
+          </Button>
+        </Box>
+        {lookupFound && (
+          <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+            <Chip label="Gefunden" color="success" size="small" sx={{ fontWeight: 700 }} />
+            {lookupDesc && (
+              <Typography variant="caption" color="text.secondary" sx={{ fontStyle: "italic" }}>
+                {lookupDesc}
+              </Typography>
+            )}
+          </Box>
+        )}
+      </Box>
 
       <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
         Unternehmensdaten

@@ -63,19 +63,19 @@ export default function DocumentsReview() {
     <StepperLayout nextDisabled={loading || !localPlan}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
         <Typography variant="h5" fontWeight={700}>
-          Ihr KI-Digitalisierungsplan
+          Ihr persönlicher Digitalplan
         </Typography>
         <Chip
           icon={<AutoFixHighIcon />}
-          label="Generiert von KI"
+          label="KI-generiert"
           size="small"
           color="secondary"
           variant="outlined"
         />
       </Box>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Ihr persönlicher 12-Monats-Plan mit Maßnahmen, Zeitplan und
-        Förderoptionen – erstellt von Gemini AI.
+        Ihr maßgeschneiderter 12-Monats-Fahrplan – mit konkreten Maßnahmen,
+        Zeitplan und passenden Förderprogrammen für Ihr Unternehmen.
       </Typography>
 
       {!sessionId && (

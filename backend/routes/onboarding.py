@@ -140,7 +140,6 @@ def create_booking(data: BookingCreate):
             supabase.table("companies")
             .select("name")
             .eq("session_id", str(data.session_id))
-            .single()
             .execute()
         )
         company_name = company_res.data[0]["name"] if company_res.data else ""

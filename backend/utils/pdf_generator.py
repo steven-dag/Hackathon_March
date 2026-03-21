@@ -144,13 +144,13 @@ def generate_plan_pdf(
 
     # ── ASSESSMENT SUMMARY ────────────────────────────────────────────────────
     story.append(Paragraph("Digitalstatus", s["h2"]))
-    tools = ", ".join(assessment.get("aktuelle_tools", [])) or "–"
-    schmerz = ", ".join(assessment.get("schmerz_punkte", [])) or "–"
-    ziel = assessment.get("ziel", "–")
+    tools = _safe(", ".join(assessment.get("aktuelle_tools", [])) or "–")
+    schmerz = _safe(", ".join(assessment.get("schmerz_punkte", [])) or "–")
+    ziel = _safe(assessment.get("ziel", "–"))
     grad_map = {1:"Kaum digital",2:"Erste Schritte",3:"Teilweise digital",
                 4:"Weitgehend digital",5:"Voll digitalisiert"}
     grad = grad_map.get(assessment.get("digitalisierungs_grad", 1), "–")
-    budget = assessment.get("budget_vorstellung") or "Nicht angegeben"
+    budget = _safe(assessment.get("budget_vorstellung") or "Nicht angegeben")
 
     assess_rows = [
         ["Aktuell genuzte Tools", tools],
@@ -198,9 +198,9 @@ def generate_plan_pdf(
         # Phase header row
         kosten_str = f"{int(kosten):,} EUR".replace(",", ".") if kosten else ""
         header_row = [[
-            Paragraph(f"<b>{monat}</b>", ParagraphStyle("ph", fontName="Helvetica-Bold",
+            Paragraph(f"<b>{_safe(monat)}</b>", ParagraphStyle("ph", fontName="Helvetica-Bold",
                       fontSize=9, textColor=WHITE)),
-            Paragraph(f"<b>{titel}</b>", ParagraphStyle("pt", fontName="Helvetica-Bold",
+            Paragraph(f"<b>{_safe(titel)}</b>", ParagraphStyle("pt", fontName="Helvetica-Bold",
                       fontSize=9, textColor=WHITE)),
             Paragraph(kosten_str, ParagraphStyle("pk", fontName="Helvetica",
                       fontSize=9, textColor=colors.HexColor("#9CA3AF"),

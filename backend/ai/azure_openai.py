@@ -46,23 +46,13 @@ Tools: {', '.join(aktuelle_tools[:3])} | Probleme: {', '.join(schmerz_punkte[:3]
 Ziel: {ziel} | Budget: {budget_vorstellung or 'offen'}
 Förderungen: {grants_summary[:200]}
 
-Erstelle einen 12-Monats-Plan. "phasen" = GENAU 12 Einträge (Monat 1 bis Monat 12), je max. 2 Maßnahmen.
+Erstelle einen INDIVIDUELLEN Digitalplan. Entscheide selbst wie viele Monate realistisch sind (6-24), basierend auf Komplexität, Unternehmensgröße und Budget. Denke wie ein erfahrener Berater: Was ist menschlich machbar? Baue 15-20% Puffer für unerwartete Ereignisse ein. "phasen" = eine Einheit pro Monat, je max. 2 Maßnahmen.
 {{
-  "zusammenfassung": "2-3 Sätze",
-  "zeitraum_monate": 12,
+  "zusammenfassung": "2-3 Sätze, inkl. warum dieser Zeitrahmen gewählt wurde",
+  "zeitraum_monate": <KI entscheidet: 6-24>,
   "phasen": [
     {{"monat":"Monat 1","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":1500}},
-    {{"monat":"Monat 2","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":2000}},
-    {{"monat":"Monat 3","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":2000}},
-    {{"monat":"Monat 4","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":2500}},
-    {{"monat":"Monat 5","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":2500}},
-    {{"monat":"Monat 6","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":1000}},
-    {{"monat":"Monat 7","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":2000}},
-    {{"monat":"Monat 8","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":2000}},
-    {{"monat":"Monat 9","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":1500}},
-    {{"monat":"Monat 10","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":1500}},
-    {{"monat":"Monat 11","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":1000}},
-    {{"monat":"Monat 12","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":500}}
+    {{"monat":"Monat 2","titel":"...","beschreibung":"1 Satz","massnahmen":["...","..."],"kosten_geschaetzt":2000}}
   ],
   "kosten_aufstellung": {{"entwicklung":0,"lizenzen":0,"beratung":0,"hardware":0,"gesamt":0,"foerderung_abzug":0,"eigenanteil":0}},
   "empfohlene_foerderungen": ["..."],

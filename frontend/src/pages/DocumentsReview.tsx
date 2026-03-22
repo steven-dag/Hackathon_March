@@ -74,8 +74,8 @@ export default function DocumentsReview() {
         />
       </Box>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Ihr maßgeschneiderter 12-Monats-Fahrplan – mit konkreten Maßnahmen,
-        Zeitplan und passenden Förderprogrammen für Ihr Unternehmen.
+        Ihr persönlicher Digitalplan – mit konkreten Maßnahmen,
+        realistischem Zeitplan und passenden Förderprogrammen für Ihr Unternehmen.
       </Typography>
 
       {!sessionId && (

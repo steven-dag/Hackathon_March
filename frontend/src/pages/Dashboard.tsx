@@ -1,4 +1,6 @@
-import { Box, Button, Container, Typography, Grid, Chip } from "@mui/material";
+import { Box, Button, Container, Typography, Grid, Chip, Accordion, AccordionSummary, AccordionDetails, Tooltip, IconButton } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
 import { useNavigate } from "react-router-dom";
 import BirdLogo from "../components/BirdLogo";
 
@@ -6,7 +8,7 @@ const stats = [
   { value: "50%", label: "max. Förderung" },
   { value: "5 Min.", label: "bis zum Plan" },
   { value: "100%", label: "kostenlos" },
-  { value: "12 Mon.", label: "Fahrplan" },
+  { value: "Ihr Plan", label: "individuell" },
 ];
 
 const steps = [
@@ -23,7 +25,7 @@ const steps = [
   {
     num: "03",
     title: "Fördergelder sichern",
-    desc: "Ihr 12-Monats-Fahrplan zeigt genau, welche Fördertöpfe Sie anzapfen können – und wie viel vom Staat zurückkommt.",
+    desc: "Kein Neukauf, kein Systemwechsel. Wir schauen was Sie bereits haben und holen das Maximum raus. Ihr persönlicher Plan zeigt, welche Fördertöpfe Sie anzapfen können – und wie viel vom Staat zurückkommt.",
   },
   {
     num: "04",
@@ -37,6 +39,7 @@ const painPoints = [
   "Fördermittel ungenutzt verfallen",
   "Keine Zeit für Digitalisierung",
   "Keine Ahnung, wo anfangen",
+  "Tools vorhanden, aber nicht ausgeschöpft",
 ];
 
 export default function Dashboard() {
@@ -61,22 +64,43 @@ export default function Dashboard() {
         }}
       >
         <BirdLogo light />
-        <Button
-          variant="contained"
-          onClick={() => navigate("/app/company")}
-          sx={{
-            bgcolor: "#4ADE80",
-            color: "#0a0a0a",
-            fontWeight: 700,
-            fontSize: "0.85rem",
-            px: 3,
-            py: 1,
-            borderRadius: 8,
-            "&:hover": { bgcolor: "#22c55e" },
-          }}
-        >
-          Kostenlos starten
-        </Button>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Tooltip title="Mein Portal" placement="bottom">
+            <IconButton
+              onClick={() => navigate("/portal/login")}
+              sx={{
+                color: "rgba(255,255,255,0.5)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: 2,
+                p: 0.9,
+                "&:hover": {
+                  color: "#4ADE80",
+                  borderColor: "rgba(74,222,128,0.4)",
+                  bgcolor: "rgba(74,222,128,0.06)",
+                },
+                transition: "all 0.2s",
+              }}
+            >
+              <AccountCircleOutlinedIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Button
+            variant="contained"
+            onClick={() => navigate("/app/company")}
+            sx={{
+              bgcolor: "#4ADE80",
+              color: "#0a0a0a",
+              fontWeight: 700,
+              fontSize: "0.85rem",
+              px: 3,
+              py: 1,
+              borderRadius: 8,
+              "&:hover": { bgcolor: "#22c55e" },
+            }}
+          >
+            Kostenlos starten
+          </Button>
+        </Box>
       </Box>
 
       {/* ── HERO ── */}
@@ -190,8 +214,8 @@ export default function Dashboard() {
             </Box>
           </Typography>
           <Grid container spacing={2}>
-            {painPoints.map((p) => (
-              <Grid size={{ xs: 12, sm: 6 }} key={p}>
+            {painPoints.map((p, i) => (
+              <Grid size={{ xs: 12, sm: 6 }} key={p} sx={i === painPoints.length - 1 && painPoints.length % 2 !== 0 ? { mx: "auto" } : {}}>
                 <Box
                   sx={{
                     p: 3,
@@ -215,7 +239,7 @@ export default function Dashboard() {
           </Grid>
           <Box sx={{ mt: 5, p: 3, bgcolor: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)", borderRadius: 2 }}>
             <Typography variant="body1" fontWeight={600} sx={{ color: "#4ADE80" }}>
-              .birdie bringt Klarheit — in 5 Minuten, kostenlos.
+              .birdie bringt Klarheit — wir arbeiten mit dem, was Sie haben. Kein Neukauf, keine Überzeugungsarbeit.
             </Typography>
           </Box>
         </Container>
@@ -269,6 +293,74 @@ export default function Dashboard() {
               </Box>
             ))}
           </Box>
+        </Container>
+      </Box>
+
+      {/* ── FAQ ── */}
+      <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: "#0a0a0a" }}>
+        <Container maxWidth="md">
+          <Typography
+            variant="overline"
+            sx={{ color: "#4ADE80", fontWeight: 700, letterSpacing: 2, display: "block", mb: 2 }}
+          >
+            Häufige Fragen
+          </Typography>
+          <Typography variant="h3" fontWeight={800} sx={{ mb: 6, fontSize: { xs: "1.8rem", md: "2.5rem" }, letterSpacing: "-1px" }}>
+            Was Sie wissen{" "}
+            <Box component="span" sx={{ color: "rgba(255,255,255,0.3)" }}>möchten.</Box>
+          </Typography>
+          {[
+            {
+              q: "Was kostet das?",
+              a: "Gar nichts. Analyse, Digitalplan und Beratungsgespräch sind vollständig kostenlos und unverbindlich. Kein Verkaufsgespräch, keine versteckten Kosten.",
+            },
+            {
+              q: "Wie lange dauert der Fördercheck?",
+              a: "Ca. 5 Minuten. Sie geben Ihre Firmendaten ein, wir matchen automatisch passende Förderprogramme und erstellen Ihren persönlichen Digitalplan. Kein Account, keine Kreditkarte.",
+            },
+            {
+              q: "Wie individuell ist der Plan wirklich?",
+              a: "Sehr. Wir verkaufen nichts Neues – wir schauen, was Sie bereits nutzen, und bauen darauf auf. Die KI analysiert Ihre bestehenden Tools, Ihre Branche und Ziele. Der Zeitrahmen wird realistisch berechnet, mit Puffer für das echte Leben.",
+            },
+            {
+              q: "Welche Förderprogramme gibt es?",
+              a: "BAFA Digitalisierungsberatung, KfW Digitalisierungskredit, Digitalbonus Bayern, go-digital (BMWi) und viele weitere Landes- und Bundesprogramme. Welche für Sie in Frage kommen, ermitteln wir automatisch.",
+            },
+            {
+              q: "Was passiert nach dem Beratungsgespräch?",
+              a: "Sie erhalten Zugang zu Ihrem persönlichen Förder-Portal. Dort sehen Sie alle freigeschalteten Programme, die benötigten Unterlagen als Checkliste – und können jederzeit mit unserem Assistenten chatten.",
+            },
+            {
+              q: "Sind meine Daten sicher?",
+              a: "Ja. Alle Daten werden ausschließlich zur Erstellung Ihres Plans verwendet und nicht an Dritte weitergegeben. Server in Deutschland, DSGVO-konform.",
+            },
+          ].map((faq, i) => (
+            <Accordion
+              key={i}
+              elevation={0}
+              disableGutters
+              sx={{
+                bgcolor: "transparent",
+                borderBottom: "1px solid rgba(255,255,255,0.07)",
+                "&:before": { display: "none" },
+                "&.Mui-expanded": { bgcolor: "rgba(74,222,128,0.03)" },
+              }}
+            >
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon sx={{ color: "#4ADE80" }} />}
+                sx={{ px: 0, py: 1 }}
+              >
+                <Typography fontWeight={700} sx={{ color: "#fff", fontSize: { xs: 15, md: 16 } }}>
+                  {faq.q}
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails sx={{ px: 0, pt: 0, pb: 2.5 }}>
+                <Typography sx={{ color: "rgba(255,255,255,0.5)", lineHeight: 1.8, fontSize: 14 }}>
+                  {faq.a}
+                </Typography>
+              </AccordionDetails>
+            </Accordion>
+          ))}
         </Container>
       </Box>
 

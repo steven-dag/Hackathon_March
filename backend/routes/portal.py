@@ -17,6 +17,16 @@ except ImportError:
 router = APIRouter(prefix="/api/portal", tags=["Portal"])
 
 
+@router.get("/debug")
+def debug_env():
+    import os, traceback
+    try:
+        res = supabase.table("companies").select("id").execute()
+        return {"supabase": "ok", "rows": len(res.data or [])}
+    except Exception as e:
+        return {"supabase": "error", "detail": str(e), "trace": traceback.format_exc()}
+
+
 # ── Login ─────────────────────────────────────────────────────────────────────
 
 class LoginRequest(BaseModel):
@@ -60,9 +70,10 @@ def get_portal_data(session_id: str):
         supabase.table("grant_matches")
         .select("*")
         .eq("session_id", session_id)
-        .order("passgenauigkeit_score", desc=True)
         .execute()
     )
+    if grants_res.data:
+        grants_res.data.sort(key=lambda g: g.get("passgenauigkeit_score") or 0, reverse=True)
     # Deduplicate: keep first (highest score) per programm_name
     seen = set()
     grants = []
@@ -81,7 +92,8 @@ def get_portal_data(session_id: str):
         .execute()
     )
     if plan_res.data:
-        plan_json = json.loads(plan_res.data[0]["plan_json"])
+        raw = plan_res.data[0]["plan_json"]
+        plan_json = raw if isinstance(raw, dict) else json.loads(raw)
         plan_summary = {
             "zusammenfassung": plan_json.get("zusammenfassung", ""),
             "zeitraum_monate": plan_res.data[0].get("zeitraum_monate", 12),
@@ -197,7 +209,7 @@ ALLOWED_MIME_TYPES = {
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 }
 ALLOWED_EXTENSIONS = {".pdf", ".jpg", ".jpeg", ".png", ".webp", ".docx"}
-MAX_FILE_SIZE_MB = 10
+MAX_FILE_SIZE_MB = 200  # no hard cap — Gemini handles large files, just takes longer
 
 
 @router.post("/{session_id}/documents/analyze")
@@ -233,7 +245,7 @@ async def analyze_document(session_id: str, file: UploadFile = File(...)):
         if len(file_bytes) > MAX_FILE_SIZE_MB * 1024 * 1024:
             raise HTTPException(
                 status_code=413,
-                detail=f"Datei zu groß. Maximum: {MAX_FILE_SIZE_MB} MB"
+                detail=f"Datei zu groß für die Verarbeitung (>{MAX_FILE_SIZE_MB} MB)"
             )
 
     # Get all grants for this session

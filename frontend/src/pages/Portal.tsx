@@ -18,7 +18,7 @@ import CheckIcon from "@mui/icons-material/Check";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import BirdLogo from "../components/BirdLogo";
 
-const BASE_URL = "http://localhost:8000";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function formatEUR(val: number): string {
@@ -288,7 +288,10 @@ function DocContainer({ sessionId, onMatch }: { sessionId: string; onMatch: (doc
           Dokumente hierher ziehen oder klicken
         </Typography>
         <Typography sx={{ color: "#6b7280", fontSize: 12 }}>
-          PDF, JPG, PNG · KI prüft automatisch welche Checklisten-Punkte abgedeckt sind
+          PDF, JPG, PNG, DOCX · KI prüft automatisch welche Checklisten-Punkte abgedeckt sind
+        </Typography>
+        <Typography sx={{ color: "#4b5563", fontSize: 11, mt: 0.5 }}>
+          ℹ️ Große Dateien werden vollständig analysiert — bei viel Inhalt kann die Analyse etwas länger dauern.
         </Typography>
       </Box>
 

@@ -12,7 +12,8 @@ from typing import List, Dict, Any
 
 load_dotenv()
 
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+_api_key = os.getenv("GEMINI_API_KEY")
+client = genai.Client(api_key=_api_key) if _api_key else None
 
 MODEL = "gemini-2.5-flash"
 
